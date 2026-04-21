@@ -1,5 +1,6 @@
 package com.example.pocketpenny.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,20 +13,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.pocketpenny.data.UserDao
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController, userDao: UserDao) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val skyBlue = Color(0xFF64B5F6)
     val darkBlue = Color(0xFF1565C0)
@@ -90,7 +99,12 @@ fun LoginScreen(navController: NavController, userDao: UserDao) {
                     onValueChange = { password = it; passwordError = "" },
                     label = { Text("Password") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        TextButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Text(if (passwordVisible) "Hide" else "Show", fontSize = 12.sp)
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     isError = passwordError.isNotEmpty()
@@ -112,15 +126,28 @@ fun LoginScreen(navController: NavController, userDao: UserDao) {
                         if (password.isBlank()) { passwordError = "Password is required"; valid = false }
 
                         if (!valid) return@Button
+
+                        scope.launch {
+                            loading = true
+                            val user = userDao.getUserByEmail(email)
+                            if (user != null && user.password == password) {
+                                Toast.makeText(context, "Welcome back ${user.firstName}!", Toast.LENGTH_LONG).show()
+                                navController.navigate("home")
+                            } else {
+                                passwordError = "Invalid email or password"
+                            }
+                            loading = false
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = skyBlue)
+                    colors = ButtonDefaults.buttonColors(containerColor = skyBlue),
+                    enabled = !loading
                 ) {
                     Text(
-                        "LOGIN",
+                        if (loading) "Logging in..." else "LOGIN",
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
