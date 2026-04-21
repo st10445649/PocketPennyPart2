@@ -24,6 +24,8 @@ fun LoginScreen(navController: NavController, userDao: UserDao) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
 
     val skyBlue = Color(0xFF64B5F6)
     val darkBlue = Color(0xFF1565C0)
@@ -69,29 +71,48 @@ fun LoginScreen(navController: NavController, userDao: UserDao) {
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = { email = it; emailError = "" },
                     label = { Text("Email") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = emailError.isNotEmpty()
                 )
+                if (emailError.isNotEmpty()) {
+                    Text(emailError, color = Color.Red, fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth())
+                }
 
                 Spacer(Modifier.height(12.dp))
 
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = { password = it; passwordError = "" },
                     label = { Text("Password") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = passwordError.isNotEmpty()
                 )
+                if (passwordError.isNotEmpty()) {
+                    Text(passwordError, color = Color.Red, fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth())
+                }
 
                 Spacer(Modifier.height(20.dp))
 
                 Button(
-                    onClick = { },
+                    onClick = {
+                        emailError = ""
+                        passwordError = ""
+                        var valid = true
+
+                        if (email.isBlank()) { emailError = "Email is required"; valid = false }
+                        if (password.isBlank()) { passwordError = "Password is required"; valid = false }
+
+                        if (!valid) return@Button
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
