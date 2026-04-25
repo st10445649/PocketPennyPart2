@@ -6,7 +6,7 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface BudgetDao {
+interface ExpenseDao {
 
     @Query("SELECT * FROM user_table WHERE username = :username AND password = :password")
     suspend fun login(username: String, password: String): User?
