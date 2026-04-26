@@ -20,7 +20,9 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { /* Navigate to Add Expense */ }) {
+            FloatingActionButton(onClick = {
+                navController.navigate("add_expense")
+            }) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
         }
