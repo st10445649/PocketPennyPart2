@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -20,10 +21,17 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                navController.navigate("add_expense")
-            }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+            FloatingActionButton(
+                containerColor = Color(0xFF64B5F6),
+                onClick = {
+                    navController.navigate("add_expense")
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Expense",
+                    tint = Color.White
+                )
             }
         }
     ) { padding ->
