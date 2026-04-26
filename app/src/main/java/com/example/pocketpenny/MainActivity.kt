@@ -12,9 +12,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val database = AppDatabase.getDatabase(applicationContext)
         val userDao = database.userDao()
+        val expenseDao = database.expenseDao()
         setContent {
             PocketPennyTheme {
-                AppNavigation(userDao = userDao)
+                AppNavigation(userDao = userDao, expenseDao = expenseDao)
             }
         }
     }
