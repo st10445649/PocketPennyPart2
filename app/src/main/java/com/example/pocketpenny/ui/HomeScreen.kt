@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.pocketpenny.data.ExpenseDao
 
@@ -49,7 +50,7 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
                 }
             }
 
-            Text("Recent Transactions", fontWeight = FontWeight.Bold)
+            Text("Recent Transactions", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             LazyColumn {
                 items(expenses.take(5)) { expense ->
                     TransactionItem(expense)

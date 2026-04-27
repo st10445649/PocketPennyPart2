@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "expense_table")
 data class Expense(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val amount: Double,
     val date: Long,
-    val startTime: String,
-    val endTime: String,
     val description: String,
+    val title: String,
     val categoryId: Int,
     val filePath: String? = null
 )

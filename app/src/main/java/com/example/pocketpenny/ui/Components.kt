@@ -36,7 +36,6 @@ fun TransactionItem(expense: Expense) {
             Text(expense.description, fontWeight = FontWeight.Medium)
             Text("Category ID: ${expense.categoryId}", fontSize = 12.sp, color = Color.Gray)
         }
-        Text("R${expense.startTime}", fontWeight = FontWeight.Bold)
     }
 }
 
