@@ -100,21 +100,30 @@ fun BudgetScreen(categories: List<Category>, dao: ExpenseDao) {
                     min < 0 -> "Minimum amount cannot be negative"
                     max < 0 -> "Maximum amount cannot be negative"
                     max <= min -> "Maximum amount must be greater than minimum amount"
+
                     else -> {
                         scope.launch {
-                            val budget = Budget(
-                                categoryId = category.id,
-                                categoryName = category.name,
-                                minAmount = min,
-                                maxAmount = max
-                            )
+                            val existingBudget =
+                                dao.getBudgetByCategoryId(category.id)
 
-                            dao.insertBudget(budget)
+                            if (existingBudget != null) {
+                                message =
+                                    "A budget already exists for this category"
+                            } else {
+                                val budget = Budget(
+                                    categoryId = category.id,
+                                    categoryName = category.name,
+                                    minAmount = min,
+                                    maxAmount = max
+                                )
 
-                            selectedCategory = null
-                            minAmount = ""
-                            maxAmount = ""
-                            message = "Budget saved successfully"
+                                dao.insertBudget(budget)
+
+                                selectedCategory = null
+                                minAmount = ""
+                                maxAmount = ""
+                                message = "Budget saved successfully"
+                            }
                         }
 
                         "Saving budget..."
