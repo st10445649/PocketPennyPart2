@@ -13,23 +13,45 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.pocketpenny.data.ExpenseDao
 
+@OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
+
     val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.List, contentDescription = "Filter")
-            Text("All Transactions", style = MaterialTheme.typography.titleLarge)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Transactions") },
+                navigationIcon = {
+                    IconButton(onClick = { /* filter later */ }) {
+                        Icon(Icons.Default.List, contentDescription = "Filter")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate("add_expense") }) {
+                        Icon(Icons.Default.List, contentDescription = "Add")
+                    }
+                }
+            )
         }
+    ) { padding ->
 
-        LazyColumn {
-            val grouped = expenses.groupBy { it.date }
-            grouped.forEach { (date, dayExpenses) ->
-                item { DateHeader(date) }
-                items(dayExpenses) { expense ->
-                    TransactionItem(expense)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+
+            LazyColumn {
+                val grouped = expenses.groupBy { it.date }
+
+                grouped.forEach { (date, dayExpenses) ->
+                    item { DateHeader(date) }
+                    items(dayExpenses) { expense ->
+                        TransactionItem(expense)
+                    }
                 }
             }
         }
