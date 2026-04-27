@@ -127,8 +127,8 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                         colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Color.White)
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Min", fontSize = 12.sp, color = Color(0xFF1A5276))
-                        Text("Max", fontSize = 12.sp, color = Color(0xFF1A5276))
+                        Text("Min: R${sliderPosition.start.toInt()}", fontSize = 12.sp, color = Color(0xFF1A5276))
+                        Text("Max: R${sliderPosition.endInclusive.toInt()}", fontSize = 12.sp, color = Color(0xFF1A5276))
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
