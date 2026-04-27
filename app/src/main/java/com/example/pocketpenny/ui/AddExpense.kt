@@ -237,7 +237,7 @@ fun AddExpenseScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             TransactionInput(
-                value = if (selectedImageUri!= null) "Photo attached" else "",
+                value = if (selectedImageUri!= null) "selectedImageUri" else "",
                 onValueChange = {},
                 label = "Add Attachment",
                 leadingIcon = {
@@ -348,7 +348,7 @@ fun AddExpenseScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF64B5F6)
+                                containerColor = Color(category.color)
                             )
                         ) {
                             Text(category.name)

@@ -8,14 +8,18 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.indicatorColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter.State.Empty.painter
+import com.example.pocketpenny.R
 import com.example.pocketpenny.data.Expense
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,24 +45,32 @@ fun TransactionItem(expense: Expense) {
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    NavigationBar(containerColor = Color(0xFFE3F2FD)) {
+    NavigationBar(containerColor = Color(0xFF5CCAFF)) {
         NavigationBarItem(
             selected = true,
             onClick = { navController.navigate("home") },
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") }
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.home_nav),contentDescription = "Home",
+                   modifier = Modifier.size(45.dp), tint = Color.Unspecified)},
+            label = { Text("Home", color= Color.White) },
+                    colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.White.copy(alpha = 0.3f)
+                    )
         )
         NavigationBarItem(
             selected = false,
             onClick = { navController.navigate("transactions") },
-            icon = { Icon(Icons.Default.List, contentDescription = "Transactions") },
-            label = { Text("List") }
+            icon = { Icon(painter = painterResource(id = R.drawable.calc_nav), contentDescription = "Transactions",
+                modifier = Modifier.size(45.dp), tint = Color.Unspecified) },
+            label = { Text("List", color= Color.White)}
         )
         NavigationBarItem(
             selected = false,
             onClick = { /* Penny Chatbot */ },
-            icon = { Icon(Icons.Default.Person, contentDescription = "Penny") },
-            label = { Text("Penny") }
+            icon = { Icon(painter = painterResource(id = R.drawable.penny_nav), contentDescription = "Penny",
+                modifier = Modifier.size(45.dp), tint = Color.Unspecified) },
+            label = { Text("Penny", color= Color.White) }
         )
     }
 }

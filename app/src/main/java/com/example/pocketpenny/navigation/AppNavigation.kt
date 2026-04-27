@@ -18,7 +18,7 @@ fun AppNavigation(userDao: UserDao, expenseDao: ExpenseDao) {
     val navController = rememberNavController()
     val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
 
-    NavHost(navController = navController, startDestination = "add_expense") {
+    NavHost(navController = navController, startDestination = "home") {
         composable("login") {
             LoginScreen(navController = navController, userDao = userDao)
         }
