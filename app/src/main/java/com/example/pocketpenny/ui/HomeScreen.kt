@@ -58,7 +58,7 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add Expense",
+                    contentDescription = "Add Expenses",
                     tint = Color(0xff00a9fc),
                     modifier = Modifier.size(32.dp)
                 )
@@ -83,6 +83,7 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
             Text(
                 "Welcome Back!",
                 fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
                 lineHeight = 32.sp
             )
