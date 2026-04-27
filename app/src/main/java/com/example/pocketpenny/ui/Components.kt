@@ -60,7 +60,7 @@ fun BottomNavigationBar(navController: NavController) {
         )
         NavigationBarItem(
             selected = false,
-            onClick = { navController.navigate("transactions") },
+            onClick = { navController.navigate("expenses") },
             icon = { Icon(painter = painterResource(id = R.drawable.calc_nav), contentDescription = "Transactions",
                 modifier = Modifier.size(45.dp), tint = Color.Unspecified) },
             label = { Text("List", color= Color.White)}
