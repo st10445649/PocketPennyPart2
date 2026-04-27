@@ -2,10 +2,16 @@
 
 package com.example.pocketpenny.ui
 
+import android.R.attr.contentDescription
+import android.R.attr.description
 import android.R.attr.label
 import android.R.attr.onClick
+import android.net.Uri
 import android.os.Build
 import android.widget.DatePicker
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,9 +26,11 @@ import androidx.compose.foundation.text.input.InputTransformation.Companion.keyb
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
+import androidx.compose.material3.Button
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +41,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +52,7 @@ import androidx.room.Transaction
 import com.example.pocketpenny.data.Category
 import com.example.pocketpenny.data.Expense
 import com.example.pocketpenny.data.ExpenseDao
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
 
@@ -63,6 +73,17 @@ fun AddExpenseScreen(
     var showCategorySheet by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(Color.Green) }
+
+    //photo attachment
+    var selectedImageUri: Uri? by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult =  {uri -> selectedImageUri = uri}
+    )
+
 
 
     val datePickerState = rememberDatePickerState()
@@ -137,7 +158,7 @@ fun AddExpenseScreen(
 
                         },
                         label = "Amount" ,
-                        KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        keyboardOptions= KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -175,9 +196,8 @@ fun AddExpenseScreen(
                         value = dateDisplayString,
                         onValueChange = {},
                         label = "Date",
-                        leadingIcon = Icons.Default.DateRange,
                         enabled = false, //typing disabled so that the date picker is only used
-                        trailingIcon = {
+                        leadingIcon = {
                             IconButton(onClick = { showDatePicker = true }) {
                                 Icon(
                                     imageVector = Icons.Default.DateRange,
@@ -217,11 +237,40 @@ fun AddExpenseScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             TransactionInput(
-                value = "",
+                value = if (selectedImageUri!= null) "Photo attached" else "",
                 onValueChange = {},
                 label = "Add Attachment",
-                leadingIcon = Icons.Default.Share
+                leadingIcon = {
+                    IconButton(onClick = {
+                        singlePhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }) {
+                            Icon(imageVector = Icons.Default.Add,
+                            contentDescription = "Add attachment (optional)",
+                            tint = Color(0xFF1A5276)
+                            )
+                        }
+
+                }
+
             )
+            Spacer(modifier = Modifier.weight(1f))
+
+            if(selectedImageUri!=null){
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ){
+                    AsyncImage(model = selectedImageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = ContentScale.Crop)
+                }
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -237,7 +286,8 @@ fun AddExpenseScreen(
                                     categoryId = selectedCategoryId,
                                     title = title,
                                     date = datePickerState.selectedDateMillis
-                                        ?: System.currentTimeMillis()
+                                        ?: System.currentTimeMillis(),
+                                    filePath = selectedImageUri.toString()
                                 )
                             )
                             navController.popBackStack()// goes back to page
@@ -386,7 +436,7 @@ fun AddExpenseScreen(
         onValueChange: (String) -> Unit,
         label: String,
         keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-        leadingIcon: ImageVector? = null,
+        leadingIcon: @Composable (() -> Unit)? = null,
         trailingIcon: @Composable (() -> Unit)? = null,
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
@@ -398,9 +448,7 @@ fun AddExpenseScreen(
             enabled = enabled,
             keyboardOptions= keyboardOptions,
             placeholder = { Text(label, color = Color(0xFF5C7A89)) },
-            leadingIcon= leadingIcon?.let {
-                { Icon(it, contentDescription = null, tint = Color(0xFF1A5276)) }
-            },
+            leadingIcon= leadingIcon,
             trailingIcon = trailingIcon,
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
             colors = TextFieldDefaults.colors(
