@@ -15,6 +15,7 @@ fun BudgetScreen(categories: List<Category>) {
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
     var minAmount by remember { mutableStateOf("") }
     var maxAmount by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -52,6 +53,7 @@ fun BudgetScreen(categories: List<Category>) {
                         onClick = {
                             selectedCategory = category
                             expanded = false
+                            message = ""
                         }
                     )
                 }
@@ -60,23 +62,48 @@ fun BudgetScreen(categories: List<Category>) {
 
         OutlinedTextField(
             value = minAmount,
-            onValueChange = { minAmount = it },
+            onValueChange = {
+                minAmount = it
+                message = ""
+            },
             label = { Text("Minimum Amount") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = maxAmount,
-            onValueChange = { maxAmount = it },
+            onValueChange = {
+                maxAmount = it
+                message = ""
+            },
             label = { Text("Maximum Amount") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Button(
-            onClick = { },
+            onClick = {
+                val min = minAmount.toDoubleOrNull()
+                val max = maxAmount.toDoubleOrNull()
+
+                message = when {
+                    selectedCategory == null -> "Please select a category"
+                    minAmount.isBlank() -> "Please enter a minimum amount"
+                    maxAmount.isBlank() -> "Please enter a maximum amount"
+                    min == null -> "Minimum amount must be a valid number"
+                    max == null -> "Maximum amount must be a valid number"
+                    min < 0 -> "Minimum amount cannot be negative"
+                    max < 0 -> "Maximum amount cannot be negative"
+                    max <= min -> "Maximum amount must be greater than minimum amount"
+                    else -> "Budget details are valid"
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Add Budget")
+        }
+
+        if (message.isNotBlank()) {
+            Text(message)
         }
     }
 }
