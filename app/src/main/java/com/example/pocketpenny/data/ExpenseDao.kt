@@ -28,4 +28,13 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM category_table WHERE id = :id")
     suspend fun getCategoryById(id: Int): Category?
+
+    @Insert
+    suspend fun insertBudget(budget: Budget)
+
+    @Query("SELECT * FROM budget_table")
+    fun getAllBudgets(): Flow<List<Budget>>
+
+    @Query("SELECT * FROM budget_table WHERE categoryId = :categoryId LIMIT 1")
+    suspend fun getBudgetByCategoryId(categoryId: Int): Budget?
 }
