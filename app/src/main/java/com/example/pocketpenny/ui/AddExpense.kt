@@ -9,22 +9,28 @@ import android.R.attr.onClick
 import android.net.Uri
 import android.os.Build
 import android.widget.DatePicker
+import android.widget.Space
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation.Companion.keyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -37,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -53,6 +60,8 @@ import com.example.pocketpenny.data.Category
 import com.example.pocketpenny.data.Expense
 import com.example.pocketpenny.data.ExpenseDao
 import coil.compose.AsyncImage
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import kotlinx.coroutines.launch
 
 
@@ -73,7 +82,7 @@ fun AddExpenseScreen(
     var showCategorySheet by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(Color.Green) }
-
+    val controller = rememberColorPickerController()
     //photo attachment
     var selectedImageUri: Uri? by remember {
         mutableStateOf<Uri?>(null)
@@ -81,9 +90,8 @@ fun AddExpenseScreen(
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
-        onResult =  {uri -> selectedImageUri = uri}
+        onResult = { uri -> selectedImageUri = uri }
     )
-
 
 
     val datePickerState = rememberDatePickerState()
@@ -116,11 +124,13 @@ fun AddExpenseScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
             ) {
-                IconButton (onClick = {
+                IconButton(onClick = {
                     navController.popBackStack()
-                }){
-                    Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null,
-                    tint = Color.White, modifier = Modifier.size(32.dp))
+                }) {
+                    Icon(
+                        Icons.Default.KeyboardArrowLeft, contentDescription = null,
+                        tint = Color.White, modifier = Modifier.size(32.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -152,13 +162,16 @@ fun AddExpenseScreen(
                     TransactionInput(
                         value = amount,
                         onValueChange = { newValue ->
-                            if (newValue.isEmpty() || newValue.toDoubleOrNull() != null || newValue.endsWith(".")) {
-                                amount= newValue
+                            if (newValue.isEmpty() || newValue.toDoubleOrNull() != null || newValue.endsWith(
+                                    "."
+                                )
+                            ) {
+                                amount = newValue
                             }
 
                         },
-                        label = "Amount" ,
-                        keyboardOptions= KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        label = "Amount",
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -237,7 +250,7 @@ fun AddExpenseScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             TransactionInput(
-                value = if (selectedImageUri!= null) "selectedImageUri" else "",
+                value = if (selectedImageUri != null) "selectedImageUri" else "",
                 onValueChange = {},
                 label = "Add Attachment",
                 leadingIcon = {
@@ -246,29 +259,32 @@ fun AddExpenseScreen(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
                     }) {
-                            Icon(imageVector = Icons.Default.Add,
+                        Icon(
+                            imageVector = Icons.Default.Add,
                             contentDescription = "Add attachment (optional)",
                             tint = Color(0xFF1A5276)
-                            )
-                        }
+                        )
+                    }
 
                 }
 
             )
             Spacer(modifier = Modifier.weight(1f))
 
-            if(selectedImageUri!=null){
+            if (selectedImageUri != null) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                         .clip(RoundedCornerShape(16.dp)),
                     elevation = CardDefaults.cardElevation(4.dp)
-                ){
-                    AsyncImage(model = selectedImageUri,
+                ) {
+                    AsyncImage(
+                        model = selectedImageUri,
                         contentDescription = null,
                         modifier = Modifier.fillMaxWidth(),
-                        contentScale = ContentScale.Crop)
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
 
@@ -310,7 +326,7 @@ fun AddExpenseScreen(
                         showDatePicker = false
                     }) { Text("OK") }
                 },
-                        dismissButton = {
+                dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
                 }
             ) {
@@ -320,21 +336,38 @@ fun AddExpenseScreen(
 
         if (showCategorySheet) {
             ModalBottomSheet(
-                onDismissRequest = { showCategorySheet = false }
+                onDismissRequest = { showCategorySheet = false },
+                containerColor = Color(0xff99ddff)
             ) {
 
                 Column(
                     modifier = Modifier
                         .padding(16.dp)
                         .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { showCategorySheet = false }) {
+                            Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
+                        }
 
-                    Text(
-                        "Select Category",
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                        Text(
+                            "Select Category",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Icon(
+                            Icons.Default.Add, contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     // Existing categories
                     categories.forEach { category ->
@@ -346,73 +379,90 @@ fun AddExpenseScreen(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .height(60.dp)
+                                .padding(vertical = 6.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(category.color)
-                            )
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                         ) {
-                            Text(category.name)
+                            Text(
+                                category.name,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                    Text("Create New Category", style = MaterialTheme.typography.titleMedium)
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val colorOptions = listOf(
-                        Color.Green,
-                        Color(0xFF9575CD),
-                        Color(0xff8f3a6d),
-                        Color(0xFFFFF176)
+                    Text(
+                        "Create New Category", style = MaterialTheme.typography.titleMedium,
+                        color = Color.White, fontWeight = FontWeight.Bold
                     )
 
-                    Row(
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        colorOptions.forEach { color ->
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .background(color, CircleShape)
-                                    .clickable { selectedColor = color }
-                            ) {
-
-                                if (selectedColor == color) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(
-                                                Color.White.copy(alpha = 0.5f),
-                                                CircleShape
-                                            )
-                                    )
-                                }
+                        HsvColorPicker(
+                            modifier = Modifier.size(180.dp),
+                            controller = controller,
+                            onColorChanged = { colorEnvelope ->
+                                selectedColor = colorEnvelope.color
                             }
-                        }
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        OutlinedTextField(
+                    //input for name with colour preview
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(selectedColor, CircleShape)
+                                .border(2.dp, Color.White, CircleShape)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        TextField(
                             value = newCategoryName,
                             onValueChange = { newCategoryName = it },
-                            label = { Text("Type in Category Name") },
-                            modifier = Modifier.weight(1f)
+                            placeholder = {
+                                Text(
+                                    "Type in Category Name",
+                                    color = Color(0xFF1A5276)
+                                )
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(16.dp)),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            )
                         )
 
                         IconButton(onClick = {
                             if (newCategoryName.isNotBlank()) {
                                 scope.launch {
-                                    val colorInt = selectedColor.toArgb()
                                     dao.insertCategory(
                                         Category(
                                             name = newCategoryName,
-                                            color = colorInt
+                                            color = selectedColor.toArgb()
                                         )
                                     )
                                     newCategoryName = ""
@@ -420,11 +470,18 @@ fun AddExpenseScreen(
                                 }
                             }
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "Create Category")
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Save",
+                                tint = Color(0xFF1A5276),
+                                modifier = Modifier.size(32.dp)
+                            )
                         }
                     }
-                }
+                    Spacer(modifier = Modifier.height(24.dp))
 
+
+                }
             }
         }
     }
@@ -446,9 +503,9 @@ fun AddExpenseScreen(
             value = value,
             onValueChange = onValueChange,
             enabled = enabled,
-            keyboardOptions= keyboardOptions,
+            keyboardOptions = keyboardOptions,
             placeholder = { Text(label, color = Color(0xFF5C7A89)) },
-            leadingIcon= leadingIcon,
+            leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
             colors = TextFieldDefaults.colors(

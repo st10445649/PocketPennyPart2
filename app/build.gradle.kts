@@ -56,6 +56,9 @@ dependencies {
     //photo attachment
     implementation("io.coil-kt:coil-compose:2.1.0")
 
+    //colour picker
+    implementation("com.github.skydoves:colorpicker-compose:1.1.2")
+
     // Room and Navigation
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
