@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.example.pocketpenny.data.Category
 import com.example.pocketpenny.data.ExpenseDao
@@ -169,7 +170,13 @@ fun AddExpenseScreen(
                     IconButton(onClick = {
                         if (newCategoryName.isNotBlank()) {
                             scope.launch {
-                                // TODO: dao.insertCategory(...)
+                                val colorInt = selectedColor.toArgb()
+                                dao.insertCategory(
+                                    Category(
+                                        name = newCategoryName,
+                                        color = colorInt
+                                    )
+                                )
                                 newCategoryName = ""
                                 showCategorySheet = false
                             }
