@@ -34,8 +34,12 @@ fun AppNavigation(userDao: UserDao, expenseDao: ExpenseDao) {
         composable("add_expense") {
             AddExpenseScreen(navController = navController, dao = expenseDao, categories)
         }
-        composable("budget") {
-            BudgetScreen(categories = categories, dao = expenseDao)
+        composable("add_budget") {
+            AddBudgetScreen(
+                navController = navController,
+                categories = categories,
+                dao = expenseDao
+            )
         }
     }
 }
