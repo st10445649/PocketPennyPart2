@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material3:material3:1.2.1")
+    implementation ("androidx.compose.material:material-icons-extended")
 
     //photo attachment
     implementation("io.coil-kt:coil-compose:2.1.0")
@@ -62,6 +63,7 @@ dependencies {
     // Room and Navigation
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.compose.ui.text)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.navigation.compose)
 
