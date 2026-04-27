@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
     val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
     val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
+    val selectedFilterCategories = remember { mutableStateListOf<Int>() }
 
     var showFilterSheet by remember { mutableStateOf(false) }
 
@@ -140,7 +141,13 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                     ) {
                         categories.forEach { category ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = false, onCheckedChange = {})
+                                Checkbox(
+                                    checked = selectedFilterCategories.contains(category.id),
+                                    onCheckedChange = { isChecked ->
+                                        if (isChecked) selectedFilterCategories.add(category.id)
+                                        else selectedFilterCategories.remove(category.id)
+                                    }
+                                )
                                 Text(category.name, color = Color(0xFF1A5276))
                             }
                         }
