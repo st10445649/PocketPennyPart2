@@ -1,150 +1,79 @@
 package com.example.pocketpenny.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.pocketpenny.data.Budget
-import com.example.pocketpenny.data.Category
+import androidx.navigation.NavController
 import com.example.pocketpenny.data.ExpenseDao
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BudgetScreen(categories: List<Category>, dao: ExpenseDao) {
+fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
 
-    val scope = rememberCoroutineScope()
+    val budgets by dao.getAllBudgets().collectAsState(initial = emptyList())
 
-    var expanded by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
-    var minAmount by remember { mutableStateOf("") }
-    var maxAmount by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-
-        Text(
-            text = "Create Budget",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
-        ) {
-            OutlinedTextField(
-                value = selectedCategory?.name ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Select Category") },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-            )
-
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("add_budget")
+                },
+                shape = CircleShape
             ) {
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category.name) },
-                        onClick = {
-                            selectedCategory = category
-                            expanded = false
-                            message = ""
-                        }
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Budget"
+                )
             }
         }
+    ) { padding ->
 
-        OutlinedTextField(
-            value = minAmount,
-            onValueChange = {
-                minAmount = it
-                message = ""
-            },
-            label = { Text("Minimum Amount") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
 
-        OutlinedTextField(
-            value = maxAmount,
-            onValueChange = {
-                maxAmount = it
-                message = ""
-            },
-            label = { Text("Maximum Amount") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                text = "Budgets",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-        Button(
-            onClick = {
-                val min = minAmount.toDoubleOrNull()
-                val max = maxAmount.toDoubleOrNull()
-                val category = selectedCategory
-
-                message = when {
-                    category == null -> "Please select a category"
-                    minAmount.isBlank() -> "Please enter a minimum amount"
-                    maxAmount.isBlank() -> "Please enter a maximum amount"
-                    min == null -> "Minimum amount must be a valid number"
-                    max == null -> "Maximum amount must be a valid number"
-                    min < 0 -> "Minimum amount cannot be negative"
-                    max < 0 -> "Maximum amount cannot be negative"
-                    max <= min -> "Maximum amount must be greater than minimum amount"
-
-                    else -> {
-                        scope.launch {
-                            val existingBudget =
-                                dao.getBudgetByCategoryId(category.id)
-
-                            if (existingBudget != null) {
-                                message =
-                                    "A budget already exists for this category"
-                            } else {
-                                val budget = Budget(
-                                    categoryId = category.id,
-                                    categoryName = category.name,
-                                    minAmount = min,
-                                    maxAmount = max
+            if (budgets.isEmpty()) {
+                Text("No budgets created yet. Tap + to add one.")
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(budgets) { budget ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = budget.categoryName,
+                                    style = MaterialTheme.typography.titleMedium
                                 )
 
-                                dao.insertBudget(budget)
+                                Spacer(modifier = Modifier.height(6.dp))
 
-                                selectedCategory = null
-                                minAmount = ""
-                                maxAmount = ""
-                                message = "Budget saved successfully"
+                                Text("Minimum: R ${budget.minAmount}")
+                                Text("Maximum: R ${budget.maxAmount}")
                             }
                         }
-
-                        "Saving budget..."
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Add Budget")
-        }
-
-        if (message.isNotBlank()) {
-            Text(message)
+            }
         }
     }
 }
