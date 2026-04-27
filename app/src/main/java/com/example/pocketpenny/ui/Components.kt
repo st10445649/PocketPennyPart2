@@ -10,9 +10,13 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.indicatorColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,23 +27,52 @@ import com.example.pocketpenny.R
 import com.example.pocketpenny.data.Expense
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.platform.LocalLocale
+import com.example.pocketpenny.data.ExpenseDao
+import androidx.compose.runtime.*
 
 @Composable
-fun TransactionItem(expense: Expense) {
+fun TransactionItem(expense: Expense, dao: ExpenseDao? = null) {
+    var category by remember { mutableStateOf<com.example.pocketpenny.data.Category?>(null) }
+
+    LaunchedEffect(expense.categoryId) {
+        category = dao?.getCategoryById(expense.categoryId)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.size(12.dp).background(Color(0xFF64B5F6), CircleShape))
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(
+                    color = Color(category?.color ?: Color.Gray.toArgb()),
+                    shape = CircleShape
+                )
+        )
 
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(expense.description, fontWeight = FontWeight.Medium)
-            Text("Category ID: ${expense.categoryId}", fontSize = 12.sp, color = Color.Gray)
+            Text(
+                text = expense.title,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF1A5276)
+            )
+            Text(
+                text = category?.name ?: "Unknown Category",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
         }
+        Text(
+            text = "R ${expense.amount}",
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A5276)
+        )
     }
 }
 
@@ -76,7 +109,7 @@ fun BottomNavigationBar(navController: NavController) {
 }
 @Composable
 fun DateHeader(dateMillis: Long) {
-    val formatter = SimpleDateFormat("EEEE, MMMM dd", Locale.getDefault())
+    val formatter = SimpleDateFormat("EEEE, MMMM dd", LocalLocale.current.platformLocale)
     val dateString = formatter.format(Date(dateMillis))
 
     Text(
