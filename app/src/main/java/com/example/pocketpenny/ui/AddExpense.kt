@@ -3,14 +3,20 @@
 package com.example.pocketpenny.ui
 
 import android.R.attr.label
+import android.R.attr.onClick
 import android.os.Build
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation.Companion.keyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
@@ -25,19 +31,26 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.room.Transaction
 import com.example.pocketpenny.data.Category
 import com.example.pocketpenny.data.Expense
 import com.example.pocketpenny.data.ExpenseDao
 import kotlinx.coroutines.launch
 
+
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddExpenseScreen(
+    navController: NavController,
     dao: ExpenseDao,
     categories: List<Category>
 ) {
@@ -45,7 +58,7 @@ fun AddExpenseScreen(
     var description by remember { mutableStateOf("") }
     var selectedCategoryId by remember { mutableIntStateOf(-1) }
     var selectedCategoryName by remember { mutableStateOf("Select Category") }
-    var amount by remember { mutableFloatStateOf(0f) }
+    var amount by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") } // Add this line
     var showCategorySheet by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
@@ -66,26 +79,29 @@ fun AddExpenseScreen(
 
 
     //background colour
-    val backgroundGradient = Brush.sweepGradient(
+    val backgroundGradient = Brush.verticalGradient(
         colors = listOf(Color(0xff00a9fc), Color(0xff54c7ff), Color(0xffddf4ff))
     )
 
     //UI elements
     Box(modifier = Modifier.fillMaxSize().background(backgroundGradient)) {
+        Spacer(modifier = Modifier.height(16.dp))
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-        )
-        {
+        ) {
             //heading bar that is consistent across all screens
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
             ) {
-                Icon(
-                    Icons.Default.KeyboardArrowLeft, contentDescription = null,
-                    tint = Color.White, modifier = Modifier.size(32.dp)
-                )
+                IconButton (onClick = {
+                    navController.popBackStack()
+                }){
+                    Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null,
+                    tint = Color.White, modifier = Modifier.size(32.dp))
+                }
+
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     "Add Transaction",
@@ -93,121 +109,130 @@ fun AddExpenseScreen(
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
+                Spacer(modifier = Modifier.weight(1.2f))
+            }
 
 
-                Spacer(modifier = Modifier.height(24.dp))
+            //card for adding expense (top card)
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.9f)
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Expense", modifier = Modifier.align(Alignment.CenterHorizontally),
+                        color = Color(0xFF1A5276)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                //card for adding expense (top card)
+                    TransactionInput(
+                        value = amount,
+                        onValueChange = { newValue ->
+                            if (newValue.isEmpty() || newValue.toDoubleOrNull() != null || newValue.endsWith(".")) {
+                                amount= newValue
+                            }
 
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "Amount", modifier = Modifier.align(Alignment.CenterHorizontally),
-                            color = Color(0xffddf4ff)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        },
+                        label = "Amount" ,
+                        KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
 
-                        TransactionInput(
-                            value = if (amount == 0f) "" else amount.toString(),
-                            onValueChange = { newValue ->
-                                if (newValue.isEmpty()) {
-                                    amount = 0f
-                                } else {
-                                    newValue.toFloatOrNull()?.let {
-                                        amount = it
-                                    }
-                                }
-                            },
-                            label = "Amount"
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Box(
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFFF0F9FF))
-                                .clickable { showCategorySheet = true }
-                                .padding(16.dp)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = selectedCategoryName,
-                                    modifier = Modifier.weight(1f),
-                                    color = Color(0xFF5C7A89)
-                                )
-                                Icon(
-                                    Icons.Default.Add,
-                                    contentDescription = null,
-                                    tint = Color(0xFF1A5276)
-                                )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    //select category
+                    Box(
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFF0F9FF))
+                            .clickable { showCategorySheet = true }
+                            .padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = selectedCategoryName,
+                                modifier = Modifier.weight(1f),
+                                color = Color(0xFF5C7A89)
+                            )
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = null,
+                                tint = Color(0xFF1A5276)
+                            )
 
 //                            IconButton(onClick = { showCategorySheet = true }) {
 //                                Icon(Icons.Default.Add, contentDescription = "Add Category")
 //                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    //date input and date picker
+                    TransactionInput(
+                        value = dateDisplayString,
+                        onValueChange = {},
+                        label = "Date",
+                        leadingIcon = Icons.Default.DateRange,
+                        enabled = false, //typing disabled so that the date picker is only used
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Select Date",
+                                    tint = Color(0xFF1A5276)
+                                )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        //date input and date picker
-                        TransactionInput(
-                            value = dateDisplayString,
-                            onValueChange = {},
-                            label = "Date",
-                            leadingIcon = Icons.Default.DateRange,
-
-                            modifier = Modifier.clickable { showDatePicker = true },
-                            enabled = false //typing disabled so that the date picker is only used
-                        )
-                    }
+                    )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Bottom Section Card (Title, Description, Attachment)
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        TransactionInput(
-                            value = title,
-                            onValueChange = { title = it },
-                            label = "Title"
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        TransactionInput(
-                            value = description,
-                            onValueChange = { description = it },
-                            label = "Description",
-                            singleLine = false
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-                TransactionInput(
-                    value = "",
-                    onValueChange = {},
-                    label = "Add Attachment",
-                    leadingIcon = Icons.Default.Share
-                )
-
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Bottom Section Card (Title, Description, Attachment)
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    TransactionInput(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = "Title"
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    TransactionInput(
+                        value = description,
+                        onValueChange = { description = it },
+                        label = "Description",
+                        singleLine = false
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TransactionInput(
+                value = "",
+                onValueChange = {},
+                label = "Add Attachment",
+                leadingIcon = Icons.Default.Share
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    if (amount > 0 && selectedCategoryId != -1) {
+                    val amountDouble = amount.toDoubleOrNull() ?: 0.0
+                    if (amountDouble > 0 && selectedCategoryId != -1) {
                         scope.launch {
                             dao.insertExpense(
                                 Expense(
-                                    amount = amount.toDouble(),
+                                    amount = amountDouble,
                                     description = description,
                                     categoryId = selectedCategoryId,
                                     title = title,
@@ -215,6 +240,7 @@ fun AddExpenseScreen(
                                         ?: System.currentTimeMillis()
                                 )
                             )
+                            navController.popBackStack()// goes back to page
                         }
                     }
                 },
@@ -232,7 +258,10 @@ fun AddExpenseScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         showDatePicker = false
-                    }) { Text("Ok") }
+                    }) { Text("OK") }
+                },
+                        dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
                 }
             ) {
                 DatePicker(state = datePickerState)
@@ -356,6 +385,7 @@ fun AddExpenseScreen(
         value: String,
         onValueChange: (String) -> Unit,
         label: String,
+        keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
         leadingIcon: ImageVector? = null,
         trailingIcon: @Composable (() -> Unit)? = null,
         modifier: Modifier = Modifier,
@@ -365,7 +395,12 @@ fun AddExpenseScreen(
         TextField(
             value = value,
             onValueChange = onValueChange,
+            enabled = enabled,
+            keyboardOptions= keyboardOptions,
             placeholder = { Text(label, color = Color(0xFF5C7A89)) },
+            leadingIcon= leadingIcon?.let {
+                { Icon(it, contentDescription = null, tint = Color(0xFF1A5276)) }
+            },
             trailingIcon = trailingIcon,
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
             colors = TextFieldDefaults.colors(
