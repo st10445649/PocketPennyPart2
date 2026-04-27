@@ -22,8 +22,8 @@ import kotlinx.coroutines.launch
 fun AddExpenseScreen(
     dao: ExpenseDao,
     categories: List<Category>
-)
-{
+) {
+
     var description by remember { mutableStateOf("") }
     var selectedCategoryId by remember { mutableIntStateOf(-1) }
     var selectedCategoryName by remember { mutableStateOf("Select Category") }
@@ -34,7 +34,6 @@ fun AddExpenseScreen(
 
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier.padding(16.dp)) {
-
         Text("Expense Amount: R${amount.toInt()}")
 
         Slider(
@@ -80,7 +79,6 @@ fun AddExpenseScreen(
             Text("Save Expense")
         }
     }
-
     if (showCategorySheet) {
         ModalBottomSheet(
             onDismissRequest = { showCategorySheet = false }
@@ -99,6 +97,7 @@ fun AddExpenseScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Existing categories
                 categories.forEach { category ->
                     Button(
                         onClick = {
@@ -118,21 +117,47 @@ fun AddExpenseScreen(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+
                 Text("Create New Category", style = MaterialTheme.typography.titleMedium)
+
+                Spacer(modifier = Modifier.height(8.dp))
+                val colorOptions = listOf(
+                    Color.Green,
+                    Color(0xFF9575CD),
+                    Color(0xFFFFB74D),
+                    Color(0xFFFFF176)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    colorOptions.forEach { color ->
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(color, CircleShape)
+                                .clickable { selectedColor = color }
+                        ) {
+
+                            if (selectedColor == color) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            Color.White.copy(alpha = 0.5f),
+                                            CircleShape
+                                        )
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(selectedColor, CircleShape)
-                            .clickable {
-                                selectedColor =
-                                    if (selectedColor == Color.Green) Color.Magenta else Color.Green
-                            }
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
 
                     OutlinedTextField(
                         value = newCategoryName,
