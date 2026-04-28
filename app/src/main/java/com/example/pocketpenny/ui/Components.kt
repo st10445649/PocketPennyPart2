@@ -25,54 +25,14 @@ import androidx.compose.ui.platform.LocalLocale
 import com.example.pocketpenny.data.ExpenseDao
 import androidx.compose.runtime.*
 
-@Composable
-fun TransactionItem(expense: Expense, dao: ExpenseDao? = null) {
-    var category by remember { mutableStateOf<com.example.pocketpenny.data.Category?>(null) }
 
-    LaunchedEffect(expense.categoryId) {
-        category = dao?.getCategoryById(expense.categoryId)
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(12.dp)
-                .background(Color(0xFF64B5F6), CircleShape)
-        )
-
-        Spacer(Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = expense.title,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF1A5276)
-            )
-            Text(
-                text = category?.name ?: "Unknown Category",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-        }
-        Text(
-            text = "R ${expense.amount}",
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1A5276)
-        )
-    }
-}
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+fun BottomNavigationBar(navController: NavController, userId: Int) {
     NavigationBar(containerColor = Color(0xFF5CCAFF)) {
         NavigationBarItem(
             selected = true,
-            onClick = { navController.navigate("home") },
+            onClick = { navController.navigate("home/$userId") },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.home_nav),
@@ -89,7 +49,7 @@ fun BottomNavigationBar(navController: NavController) {
 
         NavigationBarItem(
             selected = false,
-            onClick = { navController.navigate("expenses") },
+            onClick = { navController.navigate("expenses/$userId") },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.calcu_nav),
@@ -103,7 +63,7 @@ fun BottomNavigationBar(navController: NavController) {
 
         NavigationBarItem(
             selected = false,
-            onClick = { navController.navigate("budget") },
+            onClick = { navController.navigate("budget/$userId") },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.stats_nav),

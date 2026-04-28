@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,10 +32,10 @@ import kotlin.collections.component2
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
-    val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
-    val budgets by expenseDao.getAllBudgets().collectAsState(initial = emptyList())
-    val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
+fun HomeScreen(navController: NavController, expenseDao: ExpenseDao, userId: Int) {
+    val expenses by expenseDao.getAllExpenses(userId).collectAsState(initial = emptyList())
+    val budgets by expenseDao.getAllBudgets(userId).collectAsState(initial = emptyList())
+    val categories by expenseDao.getAllCategories(userId).collectAsState(initial = emptyList())
 
     val currentMonth = "April 2026"
 
@@ -55,13 +56,13 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
     )
 
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) },
+        bottomBar = { BottomNavigationBar(navController,userId) },
         floatingActionButton = {
             FloatingActionButton(
                 containerColor = Color.White,
                 shape = CircleShape,
                 onClick = {
-                    navController.navigate("add_expense")
+                    navController.navigate("add_expense/$userId")
                 }
             ) {
                 Icon(
@@ -81,21 +82,44 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
         )
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
             Spacer(modifier = Modifier.height(50.dp))
-            //header welcome section
-            Text(
-                "Home",
-                fontSize = 42.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                "Welcome Back!",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
-                lineHeight = 32.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {Column {
+                //header welcome section
+                Text(
+                    "Home",
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    "Welcome Back!",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
+                    lineHeight = 32.sp
+                )
+            }
             //Text("Username", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                IconButton(
+                    onClick = {
+
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ExitToApp,
+                        contentDescription = "Logout",
+                        tint = Color.White
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -114,7 +138,7 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Reusing your MultiColorProgressBar here
+
                         MultiColorProgressBar(expenses, categories, masterBudget)
 
                         Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
@@ -163,7 +187,7 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
                                 }
 
                                 items(items) { expense ->
-                                    TransactionItem(expense, expenseDao)
+                                    TransactionItem(expense, expenseDao, userId)
                                 }
 
                             }

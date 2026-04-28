@@ -51,9 +51,9 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
-    val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
-    val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
+fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao, userId :Int) {
+    val expenses by expenseDao.getAllExpenses(userId).collectAsState(initial = emptyList())
+    val categories by expenseDao.getAllCategories(userId).collectAsState(initial = emptyList())
     val selectedFilterCategories = remember { mutableStateListOf<Int>() }
     var sliderPosition by remember { mutableStateOf(0f..1_000_000f) }
     val dateRangePickerState = rememberDateRangePickerState()
@@ -155,7 +155,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                             Text("All", color = Color(0xFF1A5276), fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
 
                         Spacer(modifier = Modifier.weight(1f))
-                        IconButton(onClick = { navController.navigate("add_expense") }) {
+                        IconButton(onClick = { navController.navigate("add_expense/$userId") }) {
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = "Add",
@@ -178,7 +178,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                                 )
                             }
                             items(items) { expense ->
-                                TransactionItem(expense, expenseDao)
+                                TransactionItem(expense, expenseDao,userId)
                             }
                         }
                     }
@@ -187,7 +187,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
         }
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-            BottomNavigationBar(navController)
+            BottomNavigationBar(navController,userId)
         }
     }
     if (showDatePicker) {
@@ -385,14 +385,14 @@ fun FilterDateButton(label: String, icon: ImageVector, modifier: Modifier, onCli
     }
 }
 @Composable
-fun TransactionItem(expense: Expense, dao: ExpenseDao) {
+fun TransactionItem(expense: Expense, dao: ExpenseDao,userId: Int) {
 
     var category by remember { mutableStateOf<Category?>(null) }
     //state to check if image dialog is opened
     var showImageDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(expense.categoryId) {
-        category = dao.getCategoryById(expense.categoryId)
+        category = dao.getCategoryById(expense.categoryId, userId)
     }
 
     Row(

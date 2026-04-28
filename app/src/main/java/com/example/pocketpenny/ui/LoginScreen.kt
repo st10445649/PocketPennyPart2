@@ -1,6 +1,8 @@
 package com.example.pocketpenny.ui
 
+import android.R.attr.enabled
 import android.R.attr.singleLine
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -145,17 +147,35 @@ fun LoginScreen(navController: NavController, userDao: UserDao) {
 
                             scope.launch {
                                 loading = true
-                                val user = userDao.getUserByEmail(email)
-                                if (user != null && user.password == password) {
+                                val user = userDao.login(email, password)
+
+
+                                if (user != null) {
+
                                     Toast.makeText(
                                         context,
                                         "Welcome back ${user.firstName}!",
                                         Toast.LENGTH_LONG
                                     ).show()
-                                    navController.navigate("home")
+
+
+                                    navController.navigate("home/${user.id}") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
                                 } else {
                                     passwordError = "Invalid email or password"
                                 }
+                                //val user = userDao.getUserByEmail(email)
+//                                if (user != null && user.password == password) {
+//                                    Toast.makeText(
+//                                        context,
+//                                        "Welcome back ${user.firstName}!",
+//                                        Toast.LENGTH_LONG
+//                                    ).show()
+//                                    navController.navigate("home")
+//                                } else {
+//                                    passwordError = "Invalid email or password"
+//                                }
                                 loading = false
                             }
                         },

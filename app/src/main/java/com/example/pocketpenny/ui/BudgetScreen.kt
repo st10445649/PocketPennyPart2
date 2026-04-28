@@ -36,10 +36,10 @@ import kotlin.collections.filter
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
-    val expenses by dao.getAllExpenses().collectAsState(initial = emptyList())
-    val categories by dao.getAllCategories().collectAsState(initial = emptyList())
-    val budgets by dao.getAllBudgets().collectAsState(initial = emptyList())
+fun BudgetScreen(navController: NavController, dao: ExpenseDao, userId: Int) {
+    val expenses by dao.getAllExpenses(userId).collectAsState(initial = emptyList())
+    val categories by dao.getAllCategories(userId).collectAsState(initial = emptyList())
+    val budgets by dao.getAllBudgets(userId).collectAsState(initial = emptyList())
 
     //automatic month generation
     val currentMonth = java.time.LocalDate.now()
@@ -114,7 +114,7 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
                             fontSize = 18.sp
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        IconButton(onClick = { navController.navigate("add_budget") }) {
+                        IconButton(onClick = { navController.navigate("add_budget/$userId") }) {
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = "Edit",
@@ -227,7 +227,7 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
         }
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-            BottomNavigationBar(navController)
+            BottomNavigationBar(navController,userId)
         }
     }
 }

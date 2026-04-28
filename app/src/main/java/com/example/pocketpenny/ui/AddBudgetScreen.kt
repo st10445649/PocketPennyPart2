@@ -36,7 +36,8 @@ import kotlinx.coroutines.launch
 fun AddBudgetScreen(
     navController: NavController,
     categories: List<Category>,
-    dao: ExpenseDao
+    dao: ExpenseDao,
+    userId : Int
 ) {
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -58,7 +59,7 @@ fun AddBudgetScreen(
 
 
     LaunchedEffect(Unit) {
-        val existingBudgets = dao.getBudgetsForMonth(currentMonthYear)
+        val existingBudgets = dao.getBudgetsForMonth(currentMonthYear, userId = userId)
         existingBudgets.forEach { budget ->
             if (budget.categoryId == -1) {
                 masterBudgetAmount = budget.maxAmount.toString()
@@ -225,13 +226,18 @@ fun AddBudgetScreen(
                                     "Total category budgets (R$totalMaxPlanned) exceed Master Budget (R$masterLimit)!"
                             } else {
                                 scope.launch {
+
                                     // Save master / total budget with no category correlation
+                                    //edit exisitng budget if it exists
+                                    val existingMasterId = dao.getBudgetId(-1, currentMonthYear, userId)
                                     dao.insertBudget(
                                         Budget(
+                                            id = existingMasterId ?: 0,
                                             categoryId = -1,
                                             minAmount = 0.0,
                                             maxAmount = masterLimit,
-                                            monthYear = currentMonthYear
+                                            monthYear = currentMonthYear,
+                                            userId = userId,
                                         )
                                     )
 
@@ -241,12 +247,15 @@ fun AddBudgetScreen(
                                             categoryMinBudgets[cat.id]?.toDoubleOrNull() ?: 0.0
                                         val max =
                                             categoryMaxBudgets[cat.id]?.toDoubleOrNull() ?: 0.0
+                                        val existingCatBudgetId = dao.getBudgetId(cat.id, currentMonthYear, userId)
                                         dao.insertBudget(
                                             Budget(
+                                                id = existingCatBudgetId ?: 0,
                                                 categoryId = cat.id,
                                                 minAmount = min,
                                                 maxAmount = max,
-                                                monthYear = currentMonthYear
+                                                monthYear = currentMonthYear,
+                                                userId = userId,
                                             )
                                         )
                                     }

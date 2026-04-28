@@ -9,39 +9,37 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExpenseDao {
 
-    @Query("SELECT * FROM user_table WHERE email = :email AND password = :password")
-    suspend fun login(email: String, password: String): User?
-
-    @Insert
-    suspend fun registerUser(user: User)
 
     @Insert
     suspend fun insertCategory(category: Category)
 
-    @Query("SELECT * FROM category_table")
-    fun getAllCategories(): Flow<List<Category>>
+    @Query("SELECT * FROM category_table WHERE userId = :userId")
+    fun getAllCategories(userId: Int): Flow<List<Category>>
 
     @Insert
     suspend fun insertExpense(expense: Expense)
 
-    @Query("SELECT * FROM expense_table ORDER BY date DESC")
-    fun getAllExpenses(): Flow<List<Expense>>
+    @Query("SELECT * FROM expense_table WHERE userId = :userId ORDER BY date DESC")
+    fun getAllExpenses(userId : Int): Flow<List<Expense>>
 
-    @Query("SELECT * FROM category_table WHERE id = :id")
-    suspend fun getCategoryById(id: Int): Category?
+    @Query("SELECT * FROM category_table WHERE id = :id AND userId = :userId LIMIT 1")
+    suspend fun getCategoryById(id: Int, userId: Int): Category?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: Budget)
 
-    @Query("SELECT * FROM budget_table")
-    fun getAllBudgets(): Flow<List<Budget>>
+    @Query("SELECT * FROM budget_table WHERE userId = :userId")
+    fun getAllBudgets(userId : Int): Flow<List<Budget>>
 
-    @Query("SELECT * FROM budget_table WHERE categoryId = :categoryId LIMIT 1")
-    suspend fun getBudgetByCategoryId(categoryId: Int): Budget?
+    @Query("SELECT * FROM budget_table WHERE categoryId = :categoryId AND userId = :userId LIMIT 1")
+    suspend fun getBudgetByCategoryId(categoryId: Int, userId: Int): Budget?
 
-    @Query("SELECT * FROM budget_table WHERE monthYear = :monthYear")
-    suspend fun getBudgetsForMonth(monthYear: String): List<Budget>
+    @Query("SELECT id FROM budget_table WHERE categoryId = :catId AND monthYear = :month AND userId = :userId LIMIT 1")
+    suspend fun getBudgetId(catId: Int, month: String, userId: Int): Int?
 
-    @Query("SELECT * FROM expense_table WHERE  date >= :startDate AND date <= :endDate")
-    fun getExpensesByDate( startDate: Long, endDate: Long): Flow<List<Expense>>
+    @Query("SELECT * FROM budget_table WHERE monthYear = :monthYear AND userId = :userId")
+    suspend fun getBudgetsForMonth(monthYear: String, userId: Int): List<Budget>
+
+    @Query("SELECT * FROM expense_table WHERE userId = :userId AND  date >= :startDate AND date <= :endDate")
+    fun getExpensesByDate( userId: Int,startDate: Long, endDate: Long): Flow<List<Expense>>
 }

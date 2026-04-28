@@ -70,7 +70,8 @@ import kotlinx.coroutines.launch
 fun AddExpenseScreen(
     navController: NavController,
     dao: ExpenseDao,
-    categories: List<Category>
+    categories: List<Category>,
+    userId: Int
 ) {
     //state variables
     var description by remember { mutableStateOf("") }
@@ -356,6 +357,7 @@ fun AddExpenseScreen(
                                     }
                                     dao.insertExpense(
                                         Expense(
+                                            userId = userId,
                                             amount = amountDouble,
                                             description = description,
                                             categoryId = selectedCategoryId,
@@ -537,6 +539,7 @@ fun AddExpenseScreen(
                                     try{
                                         dao.insertCategory(
                                             Category(
+                                                userId = userId,
                                                 name = newCategoryName,
                                                 color = selectedColor.toArgb()
                                             )
