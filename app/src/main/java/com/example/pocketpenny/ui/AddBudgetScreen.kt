@@ -1,7 +1,5 @@
 package com.example.pocketpenny.ui
 
-import android.R.attr.category
-import android.R.id.message
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -44,15 +42,8 @@ fun AddBudgetScreen(
     val scrollState = rememberScrollState()
 
     var masterBudgetAmount by remember { mutableStateOf("") }
-
-    val categoryMinBudgets = remember { mutableStateMapOf<Int, String>() }
-    val categoryMaxBudgets = remember { mutableStateMapOf<Int, String>() }
-
-    var expanded by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
-    var minAmount by remember { mutableStateOf("") }
-    var maxAmount by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+    val categoryMinBudgets = remember { mutableStateMapOf<Int?, String>() }
+    val categoryMaxBudgets = remember { mutableStateMapOf<Int?, String>() }
 
     val totalPlanned = categoryMaxBudgets.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
     val masterLimit = masterBudgetAmount.toDoubleOrNull() ?: 0.0
@@ -61,6 +52,21 @@ fun AddBudgetScreen(
     var errorMessage by remember { mutableStateOf("") }
     val currentMonthYear = remember {
         java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
+    }
+
+    val progressValue = if (masterLimit > 0) (totalPlanned / masterLimit).toFloat() else 0f
+
+
+    LaunchedEffect(Unit) {
+        val existingBudgets = dao.getBudgetsForMonth(currentMonthYear)
+        existingBudgets.forEach { budget ->
+            if (budget.categoryId == -1) {
+                masterBudgetAmount = budget.maxAmount.toString()
+            } else {
+                categoryMinBudgets[budget.categoryId] = budget.minAmount.toString()
+                categoryMaxBudgets[budget.categoryId] = budget.maxAmount.toString()
+            }
+        }
     }
 
     val backgroundGradient = Brush.verticalGradient(
@@ -181,12 +187,19 @@ fun AddBudgetScreen(
                 }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Remaining to allocate: R$remaining",
-                    color = if (remaining < 0) Color.Red else Color(0xFF1A5276),
-                    fontWeight = FontWeight.Bold
-                )
+                Column {
+                    Text(
+                        text = "Remaining to allocate: R$remaining",
+                        color = if (remaining < 0) Color.Red else Color(0xFF1A5276),
+                        fontWeight = FontWeight.Bold
+                    )
+                    LinearProgressIndicator(
+                        progress = { progressValue.coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                        color = if (remaining < 0) Color.Red else Color(0xFF4FC3F7),
+                        trackColor = Color(0xFFE1F5FE)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
