@@ -31,20 +31,15 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
-    // Data States
     val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
     val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
-
-    // Filter Logic States
     val selectedFilterCategories = remember { mutableStateListOf<Int>() }
-    var sliderPosition by remember { mutableStateOf(0f..5000f) }
+    var sliderPosition by remember { mutableStateOf(0f..1_000_000f) }
     val dateRangePickerState = rememberDateRangePickerState()
 
-    // UI Visibility States
     var showDatePicker by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
 
-    // THE FILTER ENGINE
     val filteredExpenses = remember(expenses, selectedFilterCategories.size, sliderPosition, dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
         expenses.filter { expense ->
             val matchesCategory = selectedFilterCategories.isEmpty() || selectedFilterCategories.contains(expense.categoryId)
@@ -135,7 +130,6 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("Apply Filters", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            // --- NEW RESET BUTTON ---
                             TextButton(onClick = {
                                 selectedFilterCategories.clear()
                                 sliderPosition = 0f..5000f
@@ -174,7 +168,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                     RangeSlider(
                         value = sliderPosition,
                         onValueChange = { sliderPosition = it },
-                        valueRange = 0f..5000f,
+                        valueRange = 0f..1_000_000f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.White,
                             activeTrackColor = Color.White,
@@ -182,8 +176,8 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                         )
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Min: R${sliderPosition.start.toInt()}", fontSize = 12.sp, color = Color(0xFF1A5276))
-                        Text("Max: R${sliderPosition.endInclusive.toInt()}", fontSize = 12.sp, color = Color(0xFF1A5276))
+                        Text("Min: R${"%,.0f".format(sliderPosition.start)}", fontSize = 12.sp, color = Color(0xFF1A5276))
+                        Text("Max: R${"%,.0f".format(sliderPosition.endInclusive)}", fontSize = 12.sp, color = Color(0xFF1A5276))
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
