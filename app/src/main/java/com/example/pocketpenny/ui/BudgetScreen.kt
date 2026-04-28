@@ -374,7 +374,7 @@ fun CategoryStatRow(category: Category, total: Double) {
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // The Color Indicator (Matches your Penny theme)
+
         Box(
             modifier = Modifier
                 .size(12.dp)

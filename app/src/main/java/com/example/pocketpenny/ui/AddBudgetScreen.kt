@@ -156,7 +156,7 @@ fun AddBudgetScreen(
                                         text = category.name,
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 8.sp
+                                        fontSize = 10.sp
 
                                     )
                                 }
@@ -200,7 +200,7 @@ fun AddBudgetScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Remaining budget to allocate: R$remaining",
+                            text = "Remaining budget to allocate: R ${String.format("%.2f", remaining)}",
                             color = if (remaining < 0) Color.Red else Color(0xFF1A5276),
                             fontWeight = FontWeight.Bold
                         )

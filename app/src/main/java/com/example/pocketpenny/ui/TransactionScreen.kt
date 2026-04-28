@@ -1,5 +1,6 @@
 package com.example.pocketpenny.ui
 
+import android.R.attr.fontWeight
 import android.R.attr.label
 import android.R.attr.onClick
 import android.R.attr.padding
@@ -440,7 +441,7 @@ fun TransactionItem(expense: Expense, dao: ExpenseDao) {
 
     }
         Text(
-            "R ${expense.amount}",
+            "R ${String.format("%.2f",expense.amount)} ",
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1A5276)
         )
