@@ -322,3 +322,17 @@ fun ErrorText(error: String) {
         modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
     )
 }
+
+/*
+Author: Gaurav Bajaj
+Date Accessed: 27 April 2026
+Link: https://medium.com/@gauravbajaj/building-a-clean-login-screen-in-android-with-jetpack-compose-053824d05c01
+Reason: Login and register example logic with layout
+*/
+
+/*
+Author: Malik Shahbaz
+Date Accessed: 27 April 2026
+Link: https://medium.com/@malikshahbaz213/create-login-signup-text-field-components-with-jetpack-compose-419e5dd75794
+Reason: Login and register example with custom Composable text fields and password visibility
+*/

@@ -29,7 +29,20 @@ import com.example.pocketpenny.data.Category
 import com.example.pocketpenny.data.ExpenseDao
 import kotlinx.coroutines.launch
 
+/*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/develop/ui/compose/side-effects
+Reason: Documentation for calling suspend functions running coroutines outside of the UI
+*/
 
+/*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/reference/kotlin/androidx/compose/material3/TextFieldColors
+Reason: Documentation for ExperimentalMaterial3API
+Used here for TextField.Color and LinearProgressIndicator that accepts a float
+*/
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,7 +209,12 @@ fun AddBudgetScreen(
                             modifier = Modifier.padding(top = 8.dp)
                         )
                     }
-
+                    /*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/reference/kotlin/androidx/compose/material3/LinearProgressIndicator.composable#LinearProgressIndicator(kotlin.Function0
+Reason: Linear progress bar documentation for budget progress bars
+*/
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Column(modifier = Modifier.fillMaxWidth()) {

@@ -32,6 +32,14 @@ Link: https://medium.com/androiddevelopers/type-safe-navigation-for-compose-1053
 Reason: Used for routing logic for type safe navigation
 */
 
+
+/*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/guide/navigation/use-graph/navigate
+Reason: Official docs as the standard reference point for navigation
+*/
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation(userDao: UserDao, expenseDao: ExpenseDao) {

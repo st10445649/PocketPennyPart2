@@ -291,6 +291,7 @@ fun BudgetRow(category: Category, maxAmount: Double, spentAmount: Double) {
 //    }
 //}
 
+//custom progress bar using calculations and weights of boxes to determine size and indicate visual progress
 @Composable
 fun MultiColorProgressBar(
     expenses: List<Expense>,
