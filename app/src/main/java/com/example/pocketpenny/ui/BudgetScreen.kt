@@ -49,31 +49,7 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
 
             if (budgets.isEmpty()) {
                 Text("No budgets created yet. Tap + to add one.")
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(budgets) { budget ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Text(
-                                    text = budget.categoryName,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                Text("Minimum: R ${budget.minAmount}")
-                                Text("Maximum: R ${budget.maxAmount}")
-                            }
-                        }
+            }
                     }
                 }
             }
-        }
-    }
-}

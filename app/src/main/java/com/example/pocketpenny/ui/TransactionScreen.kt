@@ -1,5 +1,6 @@
 package com.example.pocketpenny.ui
 
+import android.R.attr.padding
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -40,14 +41,23 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
 
-    val filteredExpenses = remember(expenses, selectedFilterCategories.size, sliderPosition, dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
+    val filteredExpenses = remember(
+        expenses,
+        selectedFilterCategories.size,
+        sliderPosition,
+        dateRangePickerState.selectedStartDateMillis,
+        dateRangePickerState.selectedEndDateMillis
+    ) {
         expenses.filter { expense ->
-            val matchesCategory = selectedFilterCategories.isEmpty() || selectedFilterCategories.contains(expense.categoryId)
-            val matchesAmount = expense.amount >= sliderPosition.start && expense.amount <= sliderPosition.endInclusive
-            val matchesDate = if (dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null) {
-                expense.date >= dateRangePickerState.selectedStartDateMillis!! &&
-                        expense.date <= dateRangePickerState.selectedEndDateMillis!!
-            } else true
+            val matchesCategory =
+                selectedFilterCategories.isEmpty() || selectedFilterCategories.contains(expense.categoryId)
+            val matchesAmount =
+                expense.amount >= sliderPosition.start && expense.amount <= sliderPosition.endInclusive
+            val matchesDate =
+                if (dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null) {
+                    expense.date >= dateRangePickerState.selectedStartDateMillis!! &&
+                            expense.date <= dateRangePickerState.selectedEndDateMillis!!
+                } else true
 
             matchesCategory && matchesAmount && matchesDate
         }
