@@ -4,8 +4,6 @@ package com.example.pocketpenny.ui
 
 import android.R.attr.contentDescription
 import android.R.attr.description
-import android.R.attr.label
-import android.R.attr.onClick
 import android.net.Uri
 import android.os.Build
 import android.widget.DatePicker
@@ -14,6 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -83,6 +82,11 @@ fun AddExpenseScreen(
     var newCategoryName by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(Color.Green) }
     val controller = rememberColorPickerController()
+
+    //error handling message
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     //photo attachment
     var selectedImageUri: Uri? by remember {
         mutableStateOf<Uri?>(null)
@@ -116,7 +120,8 @@ fun AddExpenseScreen(
     Box(modifier = Modifier.fillMaxSize().background(backgroundGradient)) {
         Spacer(modifier = Modifier.height(16.dp))
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             //heading bar that is consistent across all screens
@@ -143,6 +148,11 @@ fun AddExpenseScreen(
                 Spacer(modifier = Modifier.weight(1.2f))
             }
 
+            // Displays error message
+            if (errorMessage != null && !showCategorySheet) {
+                errorCard(error = errorMessage)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             //card for adding expense (top card)
             Card(
@@ -180,7 +190,8 @@ fun AddExpenseScreen(
                     Box(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
                             .background(Color(0xFFF0F9FF))
-                            .clickable { showCategorySheet = true }
+                            .clickable {errorMessage = null
+                                showCategorySheet = true }
                             .padding(16.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -234,13 +245,15 @@ fun AddExpenseScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     TransactionInput(
                         value = title,
-                        onValueChange = { title = it },
+                        onValueChange = { title = it
+                            errorMessage = null},
                         label = "Title"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     TransactionInput(
                         value = description,
-                        onValueChange = { description = it },
+                        onValueChange = { description = it
+                            errorMessage = null},
                         label = "Description",
                         singleLine = false
                     )
@@ -290,23 +303,69 @@ fun AddExpenseScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            //saves expense to db
             Button(
                 onClick = {
                     val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                    if (amountDouble > 0 && selectedCategoryId != -1) {
-                        scope.launch {
-                            dao.insertExpense(
-                                Expense(
-                                    amount = amountDouble,
-                                    description = description,
-                                    categoryId = selectedCategoryId,
-                                    title = title,
-                                    date = datePickerState.selectedDateMillis
-                                        ?: System.currentTimeMillis(),
-                                    filePath = selectedImageUri.toString()
-                                )
-                            )
-                            navController.popBackStack()// goes back to page
+
+                    when {
+                        title.isBlank() -> {
+                            errorMessage = "Please enter a title"
+                            android.widget.Toast.makeText(
+                                context,
+                                errorMessage,
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        amountDouble <= 0 -> {
+                            errorMessage = "Please enter a valid amount"
+                            android.widget.Toast.makeText(
+                                context,
+                                errorMessage,
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        selectedCategoryId == -1 -> {
+                            errorMessage = "Please select a category"
+                            android.widget.Toast.makeText(
+                                context,
+                                errorMessage,
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        else -> {
+                            scope.launch {
+                                try {
+                                    //save attachment to be able to be accessed later
+                                    val finalFilePath = selectedImageUri?.let { uri ->
+                                        saveImageToInternalStorage(context, uri) ?: throw Exception(
+                                            "Failed to save image"
+                                        )
+                                    }
+                                    dao.insertExpense(
+                                        Expense(
+                                            amount = amountDouble,
+                                            description = description,
+                                            categoryId = selectedCategoryId,
+                                            title = title,
+                                            date = datePickerState.selectedDateMillis
+                                                ?: System.currentTimeMillis(),
+                                            filePath = finalFilePath
+                                        )
+                                    )
+                                    navController.popBackStack()// goes back to page
+                                } catch (e: Exception) {
+                                    errorMessage = "Database error: ${e.localizedMessage}"
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        errorMessage,
+                                        android.widget.Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                         }
                     }
                 },
@@ -317,6 +376,7 @@ fun AddExpenseScreen(
                 Text("Add Transaction", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
+
 
         if (showDatePicker) {
             DatePickerDialog(
@@ -336,7 +396,8 @@ fun AddExpenseScreen(
 
         if (showCategorySheet) {
             ModalBottomSheet(
-                onDismissRequest = { showCategorySheet = false },
+                onDismissRequest = { showCategorySheet = false
+                    errorMessage = null },
                 containerColor = Color(0xff99ddff)
             ) {
 
@@ -365,6 +426,10 @@ fun AddExpenseScreen(
                             Icons.Default.Add, contentDescription = null,
                             tint = Color.White
                         )
+                    }
+
+                    if (errorMessage != null) {
+                        errorCard(error = errorMessage)
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -396,6 +461,7 @@ fun AddExpenseScreen(
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
+
 
                     Text(
                         "Create New Category", style = MaterialTheme.typography.titleMedium,
@@ -459,16 +525,23 @@ fun AddExpenseScreen(
                         IconButton(onClick = {
                             if (newCategoryName.isNotBlank()) {
                                 scope.launch {
-                                    dao.insertCategory(
-                                        Category(
-                                            name = newCategoryName,
-                                            color = selectedColor.toArgb()
+                                    try{
+                                        dao.insertCategory(
+                                            Category(
+                                                name = newCategoryName,
+                                                color = selectedColor.toArgb()
+                                            )
                                         )
-                                    )
+
                                     newCategoryName = ""
-                                    showCategorySheet = false
+                                        errorMessage = null
+                                }catch (e: Exception) {
+                                        errorMessage = "Could not save category: ${e.localizedMessage}"
                                 }
                             }
+                        }else {
+                                errorMessage = "Category name cannot be empty"
+                        }
                         }) {
                             Icon(
                                 Icons.Default.Add,
@@ -518,3 +591,56 @@ fun AddExpenseScreen(
             singleLine = singleLine
         )
     }
+
+private fun saveImageToInternalStorage(context: android.content.Context, uri: Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val fileName = "receipt_${System.currentTimeMillis()}.jpg"
+        val file = java.io.File(context.filesDir, fileName)
+
+        inputStream?.use { input ->
+            file.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        file.absolutePath
+    } catch (e: Exception) {
+        null
+    }
+}
+
+
+@Composable
+fun errorCard(error : String?){
+    error?.let {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFFFEBEE)
+            ),
+            border = BorderStroke(1.dp, Color(0xFFEF9A9A))
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = Color(0xFFD32F2F),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = error!!,
+                    color = Color(0xFFD32F2F),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}

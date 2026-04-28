@@ -121,6 +121,10 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
                //todo: stats logic ... part 3
             }
         }
+
+        Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+            BottomNavigationBar(navController)
+        }
     }
 }
 
