@@ -6,10 +6,12 @@ import android.R.attr.padding
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -18,19 +20,28 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.pocketpenny.R
+import com.example.pocketpenny.data.Category
+import com.example.pocketpenny.data.Expense
 import com.example.pocketpenny.data.ExpenseDao
 import java.time.Instant
 import java.time.ZoneId
@@ -371,4 +382,91 @@ fun FilterDateButton(label: String, icon: ImageVector, modifier: Modifier, onCli
             Text(label, color = Color.Gray, fontSize = 14.sp, maxLines = 1)
         }
     }
+}
+@Composable
+fun TransactionItem(expense: Expense, dao: ExpenseDao) {
+
+    var category by remember { mutableStateOf<Category?>(null) }
+    //state to check if image dialog is opened
+    var showImageDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(expense.categoryId) {
+        category = dao.getCategoryById(expense.categoryId)
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+            .clickable(enabled = expense.filePath != null) {
+                showImageDialog = true
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(Color(category?.color ?: Color.Gray.toArgb()), CircleShape)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(expense.title, fontWeight = FontWeight.Bold, color = Color(0xFF1A5276))
+
+            //show description if there
+            if (!expense.description.isNullOrBlank()) {
+                Text(
+                    text = expense.description,
+                    fontSize = 13.sp,
+                    color = Color.Gray,
+                    maxLines = 1, // Keeps the list neat; you can increase this if needed
+                    overflow = TextOverflow.Ellipsis, // Adds "..." if the text is too long
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            // Only show image/link if there is an image attached
+            if (expense.filePath != "null") {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.attach),
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = Color(0xFF54C7FF)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("View Receipt", fontSize = 12.sp, color = Color(0xFF54C7FF))
+            }
+        }
+
+    }
+        Text(
+            "R ${expense.amount}",
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A5276)
+        )
+    }
+        //Popup to show
+            if (showImageDialog && expense.filePath != null) {
+                AlertDialog(
+                    onDismissRequest = { showImageDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = { showImageDialog = false }) {
+                            Text("Close", color = Color(0xFF1A5276))
+                        }
+                    },
+                    title = { Text(text = "Receipt: ${expense.title}") },
+                    text = {
+
+                        AsyncImage(
+                            model = expense.filePath,
+                            contentDescription = "Attachment",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 400.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                )
+            }
 }

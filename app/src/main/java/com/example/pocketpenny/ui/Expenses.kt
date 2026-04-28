@@ -149,42 +149,4 @@ fun ExpenseScreen(
 }}
 
 //function to set layout for groups of items/groups of expenses
-@Composable
-fun TransactionItem(expense: Expense, dao: ExpenseDao) {
 
-    var category by remember { mutableStateOf<Category?>(null) }
-
-
-    LaunchedEffect(expense.categoryId) {
-        category = dao.getCategoryById(expense.categoryId)
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .background(Color(category?.color ?: Color.Gray.toArgb()), CircleShape)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(expense.title, fontWeight = FontWeight.Medium, color = Color(0xFF1A5276))
-            // Only show image/link if there is an image attached
-            if (expense.filePath != null) {
-                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(14.dp))
-            }
-        }
-
-
-        Text(
-            "R ${expense.amount}",
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1A5276)
-        )
-    }
-}
