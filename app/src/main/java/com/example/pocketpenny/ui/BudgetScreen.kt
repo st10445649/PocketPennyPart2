@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.material3.SegmentedButtonDefaults.borderStroke
 import androidx.compose.runtime.*
@@ -31,7 +33,7 @@ import com.example.pocketpenny.data.Expense
 import com.example.pocketpenny.data.ExpenseDao
 import java.lang.ProcessBuilder.Redirect.to
 import kotlin.collections.filter
-
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
@@ -39,7 +41,11 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
     val categories by dao.getAllCategories().collectAsState(initial = emptyList())
     val budgets by dao.getAllBudgets().collectAsState(initial = emptyList())
 
-    val currentMonth = "April 2026"
+    //automatic month generation
+    val currentMonth = java.time.LocalDate.now()
+        .format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
+
+
 
     val monthlyExpenses = remember(expenses) {
         expenses.filter { expense ->
@@ -51,9 +57,32 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
         }
     }
 
+    //for filtering by user-selectable period
+    val dateRangePickerState = rememberDateRangePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+    val filteredExpenses = remember(expenses, dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
+        val start = dateRangePickerState.selectedStartDateMillis
+        val end = dateRangePickerState.selectedEndDateMillis
+        if (start != null && end != null) {
+            expenses.filter { it.date in start..end }
+        } else {
+            monthlyExpenses // Default the stats to show current month if nothing is picked
+        }
+    }
+    val resetFilter = {
+        dateRangePickerState.setSelection(null, null)
+    }
+
+    val categoryTotals = remember(filteredExpenses) {
+        filteredExpenses.groupBy { it.categoryId }
+            .mapValues { entry -> entry.value.sumOf { it.amount } }
+    }
+
     val masterBudget =
         budgets.find { it.categoryId == -1 && it.monthYear == currentMonth }?.maxAmount ?: 1.0
     val totalSpent = expenses.sumOf { it.amount }
+
+
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(Color(0xff00a9fc), Color(0xff54c7ff), Color(0xffddf4ff))
@@ -122,15 +151,78 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
                     }
                 }
             }
-
-
-
-            // Placeholder for stats
-            Box(
-                modifier = Modifier.fillMaxWidth().height(200.dp),
-                contentAlignment = Alignment.Center
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.fillMaxWidth().padding(top = 24.dp)
             ) {
-               //todo: stats logic ... part 3
+                Text(
+                    "Category Spending",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Filter Button
+                TextButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Filter", fontSize= 18.sp,color = Color.White)
+                }
+            }
+            // only shows if a date range has been selected
+            if (dateRangePickerState.selectedStartDateMillis != null) {
+                Surface(
+                    color = Color.White.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        val start = java.time.Instant.ofEpochMilli(dateRangePickerState.selectedStartDateMillis!!)
+                            .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                        val end = dateRangePickerState.selectedEndDateMillis?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                        }
+
+                        Text(
+                            text = if (end != null) "$start - $end" else "From $start",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(Modifier.width(8.dp))
+
+                        // The Reset Button
+                        IconButton(
+                            onClick = resetFilter,
+                            modifier = Modifier.size(16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Reset Filter",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            CategoryStatsCard(
+                categoryTotals = categoryTotals,
+                categories = categories
+            )
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = { TextButton(onClick = { showDatePicker = false }) { Text("OK") } }
+                ) {
+                    DateRangePicker(state = dateRangePickerState, modifier = Modifier.height(400.dp))
+                }
             }
         }
 
@@ -237,4 +329,76 @@ fun MultiColorProgressBar(
             fontSize = 14.sp
         )
     }
+}
+
+@Composable
+fun CategoryStatsCard(
+    categoryTotals: Map<Int, Double>,
+    categories: List<Category>
+) {
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "Spending by Category",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A5276),
+                fontSize = 18.sp,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            if (categoryTotals.isEmpty()) {
+                Text("No spending in this period!", color = Color(0xFF1A5276), fontWeight = FontWeight.Bold)
+                Text("Penny says: Keep chilling those expenses!", color = Color.Gray, fontSize = 12.sp)
+            } else {
+                // Display each category that has spending
+                categoryTotals.forEach { (catId, total) ->
+                    val category = categories.find { it.id == catId }
+                    if (category != null) {
+                        CategoryStatRow(category, total)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryStatRow(category: Category, total: Double) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // The Color Indicator (Matches your Penny theme)
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(Color(category.color), CircleShape)
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = category.name,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1A5276),
+            fontSize = 16.sp
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Text(
+            text = "R ${String.format("%.2f", total)}",
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A5276),
+            fontSize = 16.sp
+        )
+    }
+    // Subtle divider to keep it neat
+    HorizontalDivider(color = Color(0xFFF0F9FF), thickness = 1.dp)
 }

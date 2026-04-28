@@ -266,7 +266,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                         modifier = Modifier.weight(1f)
                     )
                     FilterDateButton(
-                        label = dateRangePickerState.selectedStartDateMillis?.let {
+                        label = dateRangePickerState.selectedEndDateMillis?.let {
                             Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
                                 .toString()
                         } ?: "End Date",
@@ -419,13 +419,13 @@ fun TransactionItem(expense: Expense, dao: ExpenseDao) {
                     text = expense.description,
                     fontSize = 13.sp,
                     color = Color.Gray,
-                    maxLines = 1, // Keeps the list neat; you can increase this if needed
-                    overflow = TextOverflow.Ellipsis, // Adds "..." if the text is too long
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
             // Only show image/link if there is an image attached
-            if (expense.filePath != "null") {
+            if (expense.filePath != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.attach),

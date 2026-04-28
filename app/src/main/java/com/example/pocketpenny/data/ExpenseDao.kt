@@ -41,4 +41,7 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM budget_table WHERE monthYear = :monthYear")
     suspend fun getBudgetsForMonth(monthYear: String): List<Budget>
+
+    @Query("SELECT * FROM expense_table WHERE  date >= :startDate AND date <= :endDate")
+    fun getExpensesByDate( startDate: Long, endDate: Long): Flow<List<Expense>>
 }
