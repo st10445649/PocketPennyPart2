@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExpenseDao {
 
-    @Query("SELECT * FROM user_table WHERE username = :username AND password = :password")
-    suspend fun login(username: String, password: String): User?
+    @Query("SELECT * FROM user_table WHERE email = :email AND password = :password")
+    suspend fun login(email: String, password: String): User?
 
     @Insert
     suspend fun registerUser(user: User)
