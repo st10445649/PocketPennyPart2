@@ -1,7 +1,5 @@
 package com.example.pocketpenny.ui
 
-import android.R.attr.onClick
-import android.R.attr.singleLine
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,8 +22,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.example.pocketpenny.R
 import com.example.pocketpenny.data.User
@@ -54,9 +54,7 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val skyBlue = Color(0xFF64B5F6)
     val darkBlue = Color(0xFF1565C0)
-    val lightCard = Color(0xFFE3F2FD)
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(Color(0xffbffcff), Color(0xff54c7ff), Color(0xff00a9fc))
@@ -67,26 +65,52 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
             .fillMaxSize()
             .background(backgroundGradient),
 
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.speechbubble),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .offset(y = 90.dp)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.pennywave),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .offset(y = 40.dp)
-            )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(top = 40.dp)) {
+
+                Image(
+                    painter = painterResource(id = R.drawable.speechbubble),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .offset(x = (-80).dp)
+                        .offset(y = (-30).dp)
+
+                )
+
+                Text(
+                    text = "Hi! I'm Penny.\nLet's get you registered so we can start chilling your spending and heating up those savings!",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1A5276),
+                    textAlign = TextAlign.Left,
+                    lineHeight = 16.sp,
+                    modifier = Modifier
+                        .padding(horizontal = 40.dp)
+                        .padding(start = 100.dp)
+                        .padding(end = 100.dp)
+                        .offset(x = (-80).dp)
+                        .offset(y = (-50).dp)
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.pennywave),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(230.dp)
+                        .offset(y = (40).dp)
+                        .offset(x = 45.dp)
+                )
+            }
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .fillMaxHeight()
                     .padding(24.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xffddf4ff)),
@@ -94,8 +118,8 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(28.dp)
-                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .padding(start = 24.dp, end = 24.dp, top = 20.dp)
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -253,7 +277,7 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
+                            .height(55.dp),
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF54C7FF)),
                         enabled = !loading
@@ -277,11 +301,17 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
                             fontSize = 13.sp
                         )
                     }
+
+
                 }
+
             }
+
         }
+
     }
 }
+
 
 @Composable
 fun ErrorText(error: String) {
