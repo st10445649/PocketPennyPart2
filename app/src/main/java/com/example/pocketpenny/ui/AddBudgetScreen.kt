@@ -121,7 +121,7 @@ fun AddBudgetScreen(
                         BudgetInputField(
                             value = masterBudgetAmount,
                             onValueChange = { masterBudgetAmount = it },
-                            placeholder = "R 10 000",
+                            placeholder = masterBudgetAmount,
                             containerColor = Color(0xFFB3E5FC)
                         )
                     }

@@ -112,7 +112,7 @@ fun BottomNavigationBar(navController: NavController) {
                     tint = Color.Unspecified
                 )
             },
-            label = { Text("List", color = Color.White) }
+            label = { Text("Budget", color = Color.White) }
         )
         NavigationBarItem(
             selected = false,

@@ -123,15 +123,7 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao) {
                 }
             }
 
-            // Spending Stats Header
-            Text(
-                "Spending Stats",
-                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                    .align(Alignment.CenterHorizontally),
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = Color(0xFF1A5276)
-            )
+
 
             // Placeholder for stats
             Box(
