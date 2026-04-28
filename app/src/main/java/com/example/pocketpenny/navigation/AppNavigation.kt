@@ -29,7 +29,7 @@ fun AppNavigation(userDao: UserDao, expenseDao: ExpenseDao) {
             HomeScreen(navController = navController, expenseDao = expenseDao)
         }
         composable("expenses") {
-            ExpenseScreen(navController = navController, dao= expenseDao, categories)
+            TransactionScreen(navController = navController, expenseDao = expenseDao)
         }
         composable("add_expense") {
             AddExpenseScreen(navController = navController,dao= expenseDao, categories)
