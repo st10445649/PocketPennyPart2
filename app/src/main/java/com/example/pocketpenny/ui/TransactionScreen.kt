@@ -2,11 +2,16 @@ package com.example.pocketpenny.ui
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,35 +19,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.pocketpenny.data.ExpenseDao
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
+    // Data States
     val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
     val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
-    val selectedFilterCategories = remember { mutableStateListOf<Int>() }
 
+    val selectedFilterCategories = remember { mutableStateListOf<Int>() }
+    var sliderPosition by remember { mutableStateOf(0f..5000f) }
+    val dateRangePickerState = rememberDateRangePickerState()
+
+    var showDatePicker by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
 
-    val groupedExpenses = remember(expenses) {
-        expenses.groupBy { expense ->
-            java.time.Instant.ofEpochMilli(expense.date)
-                .atZone(java.time.ZoneId.systemDefault())
+    val filteredExpenses = remember(expenses, selectedFilterCategories.size, sliderPosition, dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
+        expenses.filter { expense ->
+            val matchesCategory = selectedFilterCategories.isEmpty() || selectedFilterCategories.contains(expense.categoryId)
+            val matchesAmount = expense.amount >= sliderPosition.start && expense.amount <= sliderPosition.endInclusive
+            val matchesDate = if (dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null) {
+                expense.date >= dateRangePickerState.selectedStartDateMillis!! &&
+                        expense.date <= dateRangePickerState.selectedEndDateMillis!!
+            } else true
+
+            matchesCategory && matchesAmount && matchesDate
+        }
+    }
+    val groupedExpenses = remember(filteredExpenses) {
+        filteredExpenses.groupBy { expense ->
+            Instant.ofEpochMilli(expense.date)
+                .atZone(ZoneId.systemDefault())
                 .toLocalDate()
-                .format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMMM dd"))
+                .format(DateTimeFormatter.ofPattern("EEEE, MMMM dd"))
         }
     }
 
@@ -82,11 +98,24 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                 }
             }
         }
-
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("OK") }
+                }
+            ) {
+                DateRangePicker(
+                    state = dateRangePickerState,
+                    title = { Text("Select Date Range", modifier = Modifier.padding(16.dp)) },
+                    modifier = Modifier.height(450.dp)
+                )
+            }
+        }
         if (showFilterSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showFilterSheet = false },
-                containerColor = Color(0xffddf4ff),
+                containerColor = Color(0xFF64B5F6),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) {
@@ -107,24 +136,33 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text("Time", fontWeight = FontWeight.Bold, color = Color(0xFF1A5276))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = {}, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color.White)) {
-                            Text("Start Date", color = Color.Gray)
-                        }
-                        Button(onClick = {}, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color.White)) {
-                            Text("End Date", color = Color.Gray)
-                        }
+                    Button(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    ) {
+                        val start = dateRangePickerState.selectedStartDateMillis?.let {
+                            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        } ?: "Start Date"
+                        val end = dateRangePickerState.selectedEndDateMillis?.let {
+                            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        } ?: "End Date"
+
+                        Text("$start - $end", color = Color.Gray)
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text("Spending", fontWeight = FontWeight.Bold, color = Color(0xFF1A5276))
-                    var sliderPosition by remember { mutableStateOf(0f..100f) }
                     RangeSlider(
                         value = sliderPosition,
                         onValueChange = { sliderPosition = it },
                         valueRange = 0f..5000f,
-                        colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Color.White)
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color.White,
+                            activeTrackColor = Color.White,
+                            inactiveTrackColor = Color.White.copy(alpha = 0.4f)
+                        )
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Min: R${sliderPosition.start.toInt()}", fontSize = 12.sp, color = Color(0xFF1A5276))
