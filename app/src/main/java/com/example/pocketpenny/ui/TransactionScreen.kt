@@ -141,8 +141,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                         Spacer(modifier = Modifier.weight(1f))
                         // The "Reset" button only appears when filters are on
 
-                        if(isFiltered)
-                        {
+                        if(isFiltered) {
                             TextButton(onClick = {
                                 selectedFilterCategories.clear()
                                 sliderPosition = 0f..5000f
@@ -151,7 +150,8 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                                 Text("Reset Filters", color = Color(0xFF1A5276), fontWeight = FontWeight.Bold, fontSize = 20.sp)
                             }
                         } else
-                        Text("All", color = Color(0xFF1A5276), fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+
+                            Text("All", color = Color(0xFF1A5276), fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
 
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(onClick = { navController.navigate("add_expense") }) {
