@@ -255,3 +255,10 @@ fun LoginInputField(
         shape = RoundedCornerShape(0.dp)
     )
 }
+
+/*
+Author: Ashfaque Khokhar
+Date Accessed: 27 April 2026
+Link: https://medium.com/@ashfaque-khokhar/jetpack-compose-3-text-input-fields-with-examples-7ef78402c9c7
+Reason: Text input field styles and examples to see if it can be altered to fit the UI mockups
+*/

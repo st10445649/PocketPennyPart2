@@ -6,9 +6,14 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
+/*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/training/data-storage/room/async-queries
+Reason: Guidelines for accessing data from RoomDB using DAO queries
+*/
 @Dao
 interface ExpenseDao {
-
 
     @Insert
     suspend fun insertCategory(category: Category)

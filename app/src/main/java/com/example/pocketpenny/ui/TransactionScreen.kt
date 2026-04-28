@@ -47,6 +47,19 @@ import com.example.pocketpenny.data.ExpenseDao
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+/*
+Author: Medium
+Date Accessed: 27 April 2026
+Link: https://mwcode.medium.com/jetpack-compose-styling-composable-variants-3c97e55fec41
+Reason: Styling examples for composable. Different more unique options.
+*/
+
+/*
+Author: Andrew Phiri
+Date Accessed: 27 April 2026
+Link: https://medium.com/@andyphiri92/working-with-date-picker-in-jetpack-compose-3ec6c2f65a5a
+Reason: Implementing a date picker and getting the day of the week from the value using java and the date formatter.
+*/
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)

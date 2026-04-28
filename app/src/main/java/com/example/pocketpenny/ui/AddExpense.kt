@@ -480,7 +480,18 @@ fun AddExpenseScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-
+                    /*
+Author: Stefan Jovanovic
+Date Accessed: 27 April 2026
+Link: https://www.youtube.com/watch?v=QqcMKQgfzec
+Reason: Video showing colour picker in Jetpack Compose using an external library. Colour picker using the colour wheel not sliders.
+*/
+                    /*
+Author: skydoves(Github)
+Date Accessed: 27 April 2026
+Link: https://github.com/skydoves/colorpicker-compose
+Reason: Open source library for colour picker tool in Jetpack Compose
+*/
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -572,6 +583,13 @@ fun AddExpenseScreen(
     }
 }
 
+/*
+Author: Anand Gaur
+Date Accessed: 27 April 2026
+Link: https://medium.com/@anandgaur2207/jetpack-compose-chapter-8-custom-composables-in-compose-a318e5292e61
+Reason: Creating a custom function for styling that can be reused for textfields
+*/
+
     @Composable
     fun TransactionInput(
         value: String,
@@ -588,6 +606,13 @@ fun AddExpenseScreen(
             value = value,
             onValueChange = onValueChange,
             enabled = enabled,
+            /*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/reference/kotlin/androidx/compose/foundation/text/KeyboardOptions
+Reason: Virtual keyboard to only allow numerical inputs from user.
+*/
+
             keyboardOptions = keyboardOptions,
             placeholder = { Text(label, color = Color(0xFF5C7A89)) },
             leadingIcon = leadingIcon,
@@ -604,6 +629,19 @@ fun AddExpenseScreen(
         )
     }
 
+
+/*
+Author: Phillip Lackner
+Date Accessed: 27 April 2026
+Link: https://www.youtube.com/watch?v=uHX5NB6wHao
+Reason: Photo picker for single and multiple photos in Jetpack Compose.
+*/
+/*
+Author: Itsuki Kamizuru
+Date Accessed: 27 April 2026
+Link: https://towardsdev.com/android-kotlin-jetpack-compose-download-file-save-to-local-storage-and-preview-using-webview-79e5dec2338a
+Reason: Logic for saving a file to local device and accessing it later
+*/
 private fun saveImageToInternalStorage(context: android.content.Context, uri: Uri): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri)

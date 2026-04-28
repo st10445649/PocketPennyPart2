@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import com.example.pocketpenny.data.AppDatabase
 import com.example.pocketpenny.navigation.AppNavigation
-import com.example.pocketpenny.ui.theme.PocketPennyTheme
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -17,9 +16,9 @@ class MainActivity : ComponentActivity() {
         val userDao = database.userDao()
         val expenseDao = database.expenseDao()
         setContent {
-            PocketPennyTheme {
+
                 AppNavigation(userDao = userDao, expenseDao = expenseDao)
-            }
+
         }
     }
 }

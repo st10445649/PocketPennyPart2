@@ -26,7 +26,12 @@ import com.example.pocketpenny.data.ExpenseDao
 import androidx.compose.runtime.*
 
 
-
+/*
+Author: Gökhan Durmaz
+Date Accessed: 27 April 2026
+Link: https://medium.com/@gdurmaz1234/mastering-android-navigation-component-a-guide-to-navhost-and-navcontroller-d2df1bab09ef
+Reason: Different methods of navigation using navhost and navcontroller. Helping to determine what is best for this system
+*/
 @Composable
 fun BottomNavigationBar(navController: NavController, userId: Int) {
     NavigationBar(containerColor = Color(0xFF5CCAFF)) {

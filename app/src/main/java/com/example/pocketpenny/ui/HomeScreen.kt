@@ -29,7 +29,27 @@ import com.example.pocketpenny.data.Expense
 import com.example.pocketpenny.data.ExpenseDao
 import kotlin.collections.component1
 import kotlin.collections.component2
+/*
+Author: Backbase Design System
+Date Accessed: 27 April 2026
+Link: https://designsystem.backbase.com/latest/components/android/card/jetpack-compose-gwApSrRR
+Reason: Documentation explaining different formats and styles for cards,
+which is the most used component of the UI in the PennyPocket system.
+*/
 
+/*
+Author: Victor Brandalise
+Date Accessed: 27 April 2026
+Link: https://victorbrandalise.com/budget-tracker-with-jetpack-compose/
+Reason: Example budget tracker app showing an example what specifically the user needs to see first
+*/
+
+/*
+Author: MyFixGuide
+Date Accessed: 27 April 2026
+Link: https://www.myfixguide.com/color-converter/
+Reason: Colour converter to convert HEX codes from app colour palette to ARGB values used for UI
+*/
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, expenseDao: ExpenseDao, userId: Int) {
@@ -37,7 +57,9 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao, userId: Int
     val budgets by expenseDao.getAllBudgets(userId).collectAsState(initial = emptyList())
     val categories by expenseDao.getAllCategories(userId).collectAsState(initial = emptyList())
 
-    val currentMonth = "April 2026"
+    val currentMonth = java.time.LocalDate.now()
+        .format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
+
 
     val masterBudget =
         budgets.find { it.categoryId == -1 && it.monthYear == currentMonth }?.maxAmount ?: 1.0

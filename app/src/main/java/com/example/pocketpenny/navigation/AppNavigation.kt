@@ -17,6 +17,21 @@ import com.example.pocketpenny.data.ExpenseDao
 import com.example.pocketpenny.ui.*
 import androidx.compose.runtime.setValue
 
+/*
+Author: Android Developers
+Date Accessed: 27 April 2026
+Link: https://developer.android.com/guide/navigation/use-graph/navigate
+Reason: Basic navigation in jetpack compose. Navigation using navController and navHost to route to certain activities.
+*/
+
+
+/*
+Author: Don Turner
+Date Accessed: 28 April 2026
+Link: https://medium.com/androiddevelopers/type-safe-navigation-for-compose-105325a97657
+Reason: Used for routing logic for type safe navigation
+*/
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation(userDao: UserDao, expenseDao: ExpenseDao) {

@@ -215,7 +215,12 @@ fun BudgetScreen(navController: NavController, dao: ExpenseDao, userId: Int) {
                 categoryTotals = categoryTotals,
                 categories = categories
             )
-
+            /*
+            Author: Phillip Lackner
+            Date Accessed: 27 April 2026
+            Link: https://www.youtube.com/watch?v=BhyavkT2UO4
+            Reason: Date picker example to be implemented in the expense creation feature.
+            */
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },
@@ -399,6 +404,14 @@ fun CategoryStatRow(category: Category, total: Double) {
             fontSize = 16.sp
         )
     }
-    // Subtle divider to keep it neat
+
     HorizontalDivider(color = Color(0xFFF0F9FF), thickness = 1.dp)
 }
+
+
+/*
+Author: GeeksforGeeks
+Date Accessed: 27 April 2026
+Link: https://www.geeksforgeeks.org/android/card-in-android-jetpack-compose/
+Reason: Card documentation and styling examples
+*/
