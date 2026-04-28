@@ -129,6 +129,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         // The "Reset" button only appears when filters are on
+
                         if(isFiltered)
                         {
                             TextButton(onClick = {
