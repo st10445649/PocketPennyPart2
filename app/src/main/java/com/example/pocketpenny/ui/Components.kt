@@ -92,7 +92,7 @@ fun BottomNavigationBar(navController: NavController) {
             onClick = { navController.navigate("expenses") },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.calc_nav),
+                    painter = painterResource(id = R.drawable.calcu_nav),
                     contentDescription = "Transactions",
                     modifier = Modifier.size(45.dp),
                     tint = Color.Unspecified
@@ -104,10 +104,16 @@ fun BottomNavigationBar(navController: NavController) {
         NavigationBarItem(
             selected = false,
             onClick = { navController.navigate("budget") },
-            icon = { },
-            label = { Text("Budget", color = Color.White) }
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.stats_nav),
+                    contentDescription = "Budget",
+                    modifier = Modifier.size(45.dp),
+                    tint = Color.Unspecified
+                )
+            },
+            label = { Text("List", color = Color.White) }
         )
-
         NavigationBarItem(
             selected = false,
             onClick = { /* Penny Chatbot */ },
