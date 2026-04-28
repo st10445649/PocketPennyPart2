@@ -94,7 +94,9 @@ fun AddExpenseScreen(
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> selectedImageUri = uri }
+        onResult = { uri ->
+            if(uri != null){
+                selectedImageUri = uri }}
     )
 
 
@@ -263,7 +265,7 @@ fun AddExpenseScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             TransactionInput(
-                value = if (selectedImageUri != null) "selectedImageUri" else "",
+                value = selectedImageUri?.toString() ?: "",
                 onValueChange = {},
                 label = "Add Attachment",
                 leadingIcon = {
@@ -279,6 +281,13 @@ fun AddExpenseScreen(
                         )
                     }
 
+                },
+                trailingIcon = {
+                    if (selectedImageUri != null) {
+                        IconButton(onClick = { selectedImageUri = null }) {
+                            Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Red)
+                        }
+                    }
                 }
 
             )
