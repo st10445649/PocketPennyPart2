@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,13 +35,16 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
     val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
     val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
 
+    // Filter Logic States
     val selectedFilterCategories = remember { mutableStateListOf<Int>() }
     var sliderPosition by remember { mutableStateOf(0f..5000f) }
     val dateRangePickerState = rememberDateRangePickerState()
 
+    // UI Visibility States
     var showDatePicker by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
 
+    // THE FILTER ENGINE
     val filteredExpenses = remember(expenses, selectedFilterCategories.size, sliderPosition, dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
         expenses.filter { expense ->
             val matchesCategory = selectedFilterCategories.isEmpty() || selectedFilterCategories.contains(expense.categoryId)
@@ -53,6 +57,7 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
             matchesCategory && matchesAmount && matchesDate
         }
     }
+
     val groupedExpenses = remember(filteredExpenses) {
         filteredExpenses.groupBy { expense ->
             Instant.ofEpochMilli(expense.date)
@@ -127,13 +132,25 @@ fun TransactionScreen(navController: NavController, expenseDao: ExpenseDao) {
                         IconButton(onClick = { showFilterSheet = false }) {
                             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
                         }
-                        Text("Apply Filters", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Apply Filters", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            // --- NEW RESET BUTTON ---
+                            TextButton(onClick = {
+                                selectedFilterCategories.clear()
+                                sliderPosition = 0f..5000f
+                                dateRangePickerState.setSelection(null, null)
+                            }) {
+                                Text("Reset All", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                            }
+                        }
+
                         IconButton(onClick = { showFilterSheet = false }) {
                             Icon(Icons.Default.Check, contentDescription = "Apply", tint = Color.White)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text("Time", fontWeight = FontWeight.Bold, color = Color(0xFF1A5276))
                     Button(
