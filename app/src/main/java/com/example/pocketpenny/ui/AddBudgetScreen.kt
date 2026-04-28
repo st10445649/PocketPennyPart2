@@ -54,6 +54,10 @@ fun AddBudgetScreen(
     var maxAmount by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
+    val totalPlanned = categoryMaxBudgets.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
+    val masterLimit = masterBudgetAmount.toDoubleOrNull() ?: 0.0
+    val remaining = masterLimit - totalPlanned
+
     var errorMessage by remember { mutableStateOf("") }
     val currentMonthYear = remember {
         java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy"))
@@ -177,6 +181,14 @@ fun AddBudgetScreen(
                 }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Remaining to allocate: R$remaining",
+                    color = if (remaining < 0) Color.Red else Color(0xFF1A5276),
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
