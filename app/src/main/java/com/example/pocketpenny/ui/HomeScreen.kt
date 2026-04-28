@@ -33,6 +33,14 @@ import kotlin.collections.component2
 @Composable
 fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
     val expenses by expenseDao.getAllExpenses().collectAsState(initial = emptyList())
+    val budgets by expenseDao.getAllBudgets().collectAsState(initial = emptyList())
+    val categories by expenseDao.getAllCategories().collectAsState(initial = emptyList())
+
+    val currentMonth = "April 2026"
+
+    val masterBudget =
+        budgets.find { it.categoryId == -1 && it.monthYear == currentMonth }?.maxAmount ?: 1.0
+    val totalSpent = expenses.sumOf { it.amount }
 
     val groupedExpenses = remember(expenses) {
         expenses.groupBy { expense ->
@@ -72,7 +80,7 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
                 .padding(padding)
         )
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-
+            Spacer(modifier = Modifier.height(50.dp))
             //header welcome section
             Text(
                 "Home",
@@ -87,38 +95,79 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
                 color = Color.White,
                 lineHeight = 32.sp
             )
+            //Text("Username", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
             Spacer(modifier = Modifier.height(30.dp))
+
+            //section for budget
             Card(
-                modifier = Modifier.fillMaxSize(),
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f))
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Monthly Budget",
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1A5276),
+                            fontSize = 18.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        "Recent Transactions",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color(0xFF1A5276)
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    LazyColumn {
-                        groupedExpenses.forEach { (date, items) ->
-                            item {
-                                Text(
-                                    text = date,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1A5276),
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                            }
-                            items(items) { expense ->
-                                TransactionItem(expense, expenseDao)
-                            }
+                        // Reusing your MultiColorProgressBar here
+                        MultiColorProgressBar(expenses, categories, masterBudget)
 
+                        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                            Text(currentMonth, color = Color(0xFF5C7A89), fontSize = 12.sp)
+                            Spacer(modifier = Modifier.weight(1f))
+                            Text(
+                                text = "R ${
+                                    String.format(
+                                        "%.2f",
+                                        totalSpent
+                                    )
+                                } / R ${masterBudget.toInt()}",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1A5276),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+            //transactions section
+                Card(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.8f))
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            "Recent Transactions",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp,
+                            color = Color(0xff00a9fc)
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        LazyColumn {
+                            groupedExpenses.forEach { (date, items) ->
+                                item {
+                                    Text(
+                                        text = date,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1A5276),
+                                        modifier = Modifier.padding(vertical = 8.dp))
+                                }
+
+                                items(items) { expense ->
+                                    TransactionItem(expense, expenseDao)
+                                }
+
+                            }
+                            item { Spacer(modifier = Modifier.height(80.dp)) }
                         }
                     }
                 }
@@ -126,47 +175,5 @@ fun HomeScreen(navController: NavController, expenseDao: ExpenseDao) {
         }
     }
 
-    @Composable
-    fun TransactionItem(expense: Expense, dao: ExpenseDao) {
-
-        var category by remember { mutableStateOf<Category?>(null) }
 
 
-        LaunchedEffect(expense.categoryId) {
-            category = dao.getCategoryById(expense.categoryId)
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(Color(category?.color ?: Color.Gray.toArgb()), CircleShape)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(expense.title, fontWeight = FontWeight.Medium, color = Color(0xFF1A5276))
-                // Only show image/link if there is an image attached
-                if (expense.filePath != null) {
-                    Icon(
-                        Icons.Default.Share,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-
-
-            Text(
-                "R ${expense.amount}",
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A5276)
-            )
-        }
-    }
-}
