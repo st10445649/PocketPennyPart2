@@ -106,7 +106,7 @@ fun AddBudgetScreen(
                 colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     //total/master budget
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -132,7 +132,7 @@ fun AddBudgetScreen(
                     if (categories.isEmpty()) {
                         Text(
                             "No categories found. Add some when adding in expenses",
-                            color = Color.Gray,
+                            color = Color(0xFF1A5276),
                             modifier = Modifier.padding(16.dp)
                         )
                     }
@@ -155,7 +155,9 @@ fun AddBudgetScreen(
                                     Text(
                                         text = category.name,
                                         color = Color.White,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 8.sp
+
                                     )
                                 }
                             }
@@ -165,7 +167,9 @@ fun AddBudgetScreen(
                             // space to add minimum amount per category
                             BudgetInputField(
                                 value = categoryMinBudgets[category.id] ?: "",
-                                onValueChange = { categoryMinBudgets[category.id] = it; errorMessage = "" },
+                                onValueChange = {
+                                    categoryMinBudgets[category.id] = it; errorMessage = ""
+                                },
                                 placeholder = "Min",
                                 modifier = Modifier.width(70.dp)
                             )
@@ -175,63 +179,90 @@ fun AddBudgetScreen(
                             // space to add maximum amount per category
                             BudgetInputField(
                                 value = categoryMaxBudgets[category.id] ?: "",
-                                onValueChange = { categoryMaxBudgets[category.id] = it; errorMessage = "" },
+                                onValueChange = {
+                                    categoryMaxBudgets[category.id] = it; errorMessage = ""
+                                },
                                 placeholder = "Max",
                                 modifier = Modifier.width(70.dp)
                             )
                         }
                     }
                     if (errorMessage.isNotEmpty()) {
-                        Text(errorMessage, color = Color.Red, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                        Text(
+                            errorMessage,
+                            color = Color.Red,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Remaining budget to allocate: R$remaining",
+                            color = if (remaining < 0) Color.Red else Color(0xFF1A5276),
+                            fontWeight = FontWeight.Bold
+                        )
+                        LinearProgressIndicator(
+                            progress = { progressValue.coerceIn(0f, 1f) },
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                            color = if (remaining < 0) Color.Red else Color(0xFF4FC3F7),
+                            trackColor = Color(0xFFE1F5FE)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            val masterLimit = masterBudgetAmount.toDoubleOrNull() ?: 0.0
+                            val totalMaxPlanned =
+                                categoryMaxBudgets.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
+
+                            if (totalMaxPlanned > masterLimit) {
+                                errorMessage =
+                                    "Total category budgets (R$totalMaxPlanned) exceed Master Budget (R$masterLimit)!"
+                            } else {
+                                scope.launch {
+                                    // Save master / total budget with no category correlation
+                                    dao.insertBudget(
+                                        Budget(
+                                            categoryId = -1,
+                                            minAmount = 0.0,
+                                            maxAmount = masterLimit,
+                                            monthYear = currentMonthYear
+                                        )
+                                    )
+
+                                    // Save Category budgets
+                                    categories.forEach { cat ->
+                                        val min =
+                                            categoryMinBudgets[cat.id]?.toDoubleOrNull() ?: 0.0
+                                        val max =
+                                            categoryMaxBudgets[cat.id]?.toDoubleOrNull() ?: 0.0
+                                        dao.insertBudget(
+                                            Budget(
+                                                categoryId = cat.id,
+                                                minAmount = min,
+                                                maxAmount = max,
+                                                monthYear = currentMonthYear
+                                            )
+                                        )
+                                    }
+                                    navController.popBackStack()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FC3F7))
+                    ) {
+                        Text("Save All Budgets", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
-
-        Spacer(modifier = Modifier.height(24.dp))
-                Column {
-                    Text(
-                        text = "Remaining to allocate: R$remaining",
-                        color = if (remaining < 0) Color.Red else Color(0xFF1A5276),
-                        fontWeight = FontWeight.Bold
-                    )
-                    LinearProgressIndicator(
-                        progress = { progressValue.coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
-                        color = if (remaining < 0) Color.Red else Color(0xFF4FC3F7),
-                        trackColor = Color(0xFFE1F5FE)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        val masterLimit = masterBudgetAmount.toDoubleOrNull() ?: 0.0
-                        val totalMaxPlanned = categoryMaxBudgets.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
-
-                        if (totalMaxPlanned > masterLimit) {
-                            errorMessage = "Total category budgets (R$totalMaxPlanned) exceed Master Budget (R$masterLimit)!"
-                        } else {
-                            scope.launch {
-                                // Save master / total budget with no category correlation
-                                dao.insertBudget(Budget(categoryId = -1, minAmount = 0.0, maxAmount = masterLimit, monthYear = currentMonthYear))
-
-                                // Save Category budgets
-                                categories.forEach { cat ->
-                                    val min = categoryMinBudgets[cat.id]?.toDoubleOrNull() ?: 0.0
-                                    val max = categoryMaxBudgets[cat.id]?.toDoubleOrNull() ?: 0.0
-                                    dao.insertBudget(Budget(categoryId = cat.id, minAmount = min, maxAmount = max, monthYear = currentMonthYear))
-                                }
-                                navController.popBackStack()
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FC3F7))
-                ){
-                    Text("Save All Budgets", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
             }
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
