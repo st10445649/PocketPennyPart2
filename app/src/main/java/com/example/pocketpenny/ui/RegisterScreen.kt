@@ -51,6 +51,8 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
     var passwordError by remember { mutableStateOf("") }
     var confirmPasswordError by remember { mutableStateOf("") }
 
+    val isPasswordStrong = password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$".toRegex())
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -238,8 +240,8 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
 
                             if (password.isBlank()) {
                                 passwordError = "Password is required"; valid = false
-                            } else if (password.length < 6) {
-                                passwordError = "Password must be at least 6 characters"; valid =
+                            } else if (!isPasswordStrong) {
+                                passwordError = "Password must be 8+ chars with a capital, number, and symbol (@#\$%^&+=!)"; valid =
                                     false
                             }
                             if (confirmPassword.isBlank()) {
@@ -252,15 +254,15 @@ fun RegisterScreen(navController: NavController, userDao: UserDao) {
 
                             scope.launch {
                                 loading = true
-                                val emailExists = userDao.checkIfEmailExists(email)
+                                val emailExists = userDao.checkIfEmailExists((email.trim().lowercase()))
                                 when {
                                     emailExists -> emailError = "Email already registered"
                                     else -> {
                                         userDao.registerUser(
                                             User(
-                                                firstName = firstName,
-                                                lastName = lastName,
-                                                email = email,
+                                                firstName = firstName.trim().replaceFirstChar { it.uppercase() },
+                                                lastName = lastName.trim().replaceFirstChar { it.uppercase() },
+                                                email = email.trim().lowercase(),
                                                 password = password
                                             )
                                         )

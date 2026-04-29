@@ -359,9 +359,9 @@ fun AddExpenseScreen(
                                         Expense(
                                             userId = userId,
                                             amount = amountDouble,
-                                            description = description,
+                                            description = formatDescription(description),
                                             categoryId = selectedCategoryId,
-                                            title = title,
+                                            title = title.trim().replaceFirstChar { it.uppercase() },
                                             date = datePickerState.selectedDateMillis
                                                 ?: System.currentTimeMillis(),
                                             filePath = finalFilePath
@@ -551,7 +551,7 @@ Reason: Open source library for colour picker tool in Jetpack Compose
                                         dao.insertCategory(
                                             Category(
                                                 userId = userId,
-                                                name = newCategoryName,
+                                                name = newCategoryName.trim().replaceFirstChar { it.uppercase() },
                                                 color = selectedColor.toArgb()
                                             )
                                         )
@@ -659,6 +659,16 @@ private fun saveImageToInternalStorage(context: android.content.Context, uri: Ur
     }
 }
 
+fun formatDescription(input: String): String {
+    val trimmed = input.trim()
+    if (trimmed.isEmpty()) return ""
+
+    val capitalized = trimmed.replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString()
+    }
+
+    return if (capitalized.endsWith('.')) capitalized else "$capitalized."
+}
 
 @Composable
 fun errorCard(error : String?){

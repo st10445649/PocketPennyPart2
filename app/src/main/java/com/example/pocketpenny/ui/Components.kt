@@ -1,5 +1,8 @@
 package com.example.pocketpenny.ui
 
+import android.R.attr.label
+import android.R.attr.onClick
+import android.R.attr.x
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +27,7 @@ import java.util.*
 import androidx.compose.ui.platform.LocalLocale
 import com.example.pocketpenny.data.ExpenseDao
 import androidx.compose.runtime.*
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 
 /*
@@ -34,26 +38,37 @@ Reason: Different methods of navigation using navhost and navcontroller. Helping
 */
 @Composable
 fun BottomNavigationBar(navController: NavController, userId: Int) {
-    NavigationBar(containerColor = Color(0xFF5CCAFF)) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    //home button
+    NavigationBar(containerColor = Color(0xFF5CCAFF),
+            modifier = Modifier.height(115.dp)) {
+        val isSelected = currentRoute?.startsWith("home") == true
+
         NavigationBarItem(
-            selected = true,
+            selected = isSelected,
             onClick = { navController.navigate("home/$userId") },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.home_nav),
                     contentDescription = "Home",
                     modifier = Modifier.size(45.dp),
-                    tint = Color.Unspecified
+                    tint = Color.Unspecified,
+
                 )
             },
             label = { Text("Home", color = Color.White) },
             colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color.White.copy(alpha = 0.3f)
+                indicatorColor = Color.White.copy(alpha = 0.3f) ,
+                selectedIconColor = Color.White,
+                unselectedIconColor = Color.White.copy(0.7f)
             )
         )
 
+        val isExpenseSelected = currentRoute?.startsWith("expenses") == true
         NavigationBarItem(
-            selected = false,
+            selected = isExpenseSelected,
             onClick = { navController.navigate("expenses/$userId") },
             icon = {
                 Icon(
@@ -63,12 +78,20 @@ fun BottomNavigationBar(navController: NavController, userId: Int) {
                     tint = Color.Unspecified
                 )
             },
-            label = { Text("List", color = Color.White) }
+            label = { Text("Transactions", color = Color.White) },
+
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = Color.White.copy(alpha = 0.3f) ,
+                selectedIconColor = Color.White,
+                unselectedIconColor = Color.White.copy(0.7f)
+            )
         )
 
+        val isBudgetSelected = currentRoute?.startsWith("budget") == true
         NavigationBarItem(
-            selected = false,
+            selected = isBudgetSelected,
             onClick = { navController.navigate("budget/$userId") },
+            modifier = Modifier.offset(10.dp),
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.stats_nav),
@@ -77,7 +100,13 @@ fun BottomNavigationBar(navController: NavController, userId: Int) {
                     tint = Color.Unspecified
                 )
             },
-            label = { Text("Budget", color = Color.White) }
+            label = { Text("Budget", color = Color.White) },
+
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = Color.White.copy(alpha = 0.3f) ,
+                selectedIconColor = Color.White,
+                unselectedIconColor = Color.White.copy(0.7f),
+            )
         )
         NavigationBarItem(
             selected = false,
@@ -90,7 +119,13 @@ fun BottomNavigationBar(navController: NavController, userId: Int) {
                     tint = Color.Unspecified
                 )
             },
-            label = { Text("Penny", color = Color.White) }
+            label = { Text("Penny", color = Color.White) },
+
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = Color.White.copy(alpha = 0.3f) ,
+                selectedIconColor = Color.White,
+                unselectedIconColor = Color.White.copy(0.7f)
+            )
         )
     }
 }
